@@ -1,0 +1,16 @@
+{
+"name": "short_",
+"description": "Short example for testing.",
+"user": "ubuntu",
+"region": "us-east-1",
+"instance_type": "t2.micro",
+"base_image": {
+    "doc-string": "These are the U16.04 amd64 ebs images as of 3-Aug-2017",
+    "us-east-1": "ami-b391b9c8"
+},
+"tags": [{"owner": "oznt"}, {"project": "my project"}],
+"uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
+	    "examples/upload/bar.txt": "/tmp/upload/bar.txt"},
+"commands": [ "sudo apt-get update",
+              "sudo apt-get upgrade -y"]
+}
