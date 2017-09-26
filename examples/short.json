@@ -12,5 +12,5 @@
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
 	    "examples/upload/bar.txt": "/tmp/upload/bar.txt"},
 "commands": [ "sudo apt-get update",
-              "sudo apt-get upgrade -y"]
+              "sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade"]
 }
