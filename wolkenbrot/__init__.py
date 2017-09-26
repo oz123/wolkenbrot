@@ -6,6 +6,7 @@ import os
 import random
 import signal
 import string
+import sys
 import time
 
 from io import StringIO
@@ -84,26 +85,29 @@ class SSHClient:  # pragma: no coverage
         self.channel.setblocking(1)
         self.channel.exec_command(command)
 
-        outdata, errdata = b'', b''
         channel = self.channel
 
         while True:  # monitoring process
             # Reading from output streams
             while channel.recv_ready():
-                outdata += channel.recv(1000)
+                received = channel.recv(1000)
+                sys.stdout.write(received.decode())
+                sys.stdout.flush()
+
             while channel.recv_stderr_ready():
-                errdata += channel.recv_stderr(1000)
+                received = channel.recv_stderr(1000)
+                sys.stderr.write(received.decode())
+                sys.stderr.flush()
+
             if channel.exit_status_ready():  # If completed
                 break
-            time.sleep(1)
+            time.sleep(0.1)
 
         retcode = channel.recv_exit_status()
 
         self.channel.close()
 
-        return {'out': outdata.decode(),
-                'err': errdata.decode(),
-                'retval': retcode}
+        return {'retval': retcode}
 
     def copy(self, src, dest):
         if not self.sftp:
@@ -274,13 +278,13 @@ class Builder:
             ok = command_result['retval'] == 0
             print("Command '{}' {}".format(command,
                                            "succeeded" if ok else "failed!"))
-            if 'out' in command_result:
-                print(''.join(command_result['out']))
+            # if 'out' in command_result:
+            #    print(''.join(command_result['out']))
 
-            if not ok:
-                if 'err' in command_result:
-                    print("Here are the errors:")
-                    print(''.join(command_result['err']))
+            # if not ok:
+            #     if 'err' in command_result:
+            #         print("Here are the errors:")
+            #        print(''.join(command_result['err']))
 
         print("Finished configuration of instance")
 
