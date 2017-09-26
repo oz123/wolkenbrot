@@ -378,10 +378,26 @@ def delete_image(ec2, image_id):
     return resp
 
 
+def validate_image_name(ec2, name):
+    """
+    Check that an image with that name does not already exist
+    """
+    response = ec2.describe_images(
+        Filters=[{'Name': 'is-public', 'Values': ['false']},
+                 {'Name': 'name', 'Values': [name]}])
+    return response['Images']
+
+
 def bake(ec2, image):  # pragma: no coverage
     with open(image, "r") as fd:
         config_dict = json.load(fd)
-        check_config(config_dict)
+
+    check_config(config_dict)
+    if validate_image_name(ec2.meta.client, config_dict['name']):
+        print("An image named '{}' already exists!!!".format(
+            config_dict['name']))
+        sys.exit(2)
+
     with Builder(ec2, config_dict) as builder:
         builder.launch()
         builder.wait_for_ssh()
