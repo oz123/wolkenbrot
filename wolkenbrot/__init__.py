@@ -14,6 +14,7 @@ from getpass import getuser
 from pprint import pprint
 
 import boto3
+import colorama
 import paramiko
 
 
@@ -23,6 +24,18 @@ class TimeoutError(Exception):
 
 class BadConfigFile(Exception):
     pass
+
+
+def printy(string):
+    print(colorama.Fore.YELLOW + string + colorama.Fore.RESET)
+
+
+def printr(string):
+    print(colorama.Fore.RED + string + colorama.Fore.RESET)
+
+
+def printg(string):
+    print(colorama.Fore.GREEN + string + colorama.Fore.RESET)
 
 
 def timeout(seconds, error_message='Function call timed out'):  # pragma: no coverage  # noqa
@@ -91,12 +104,14 @@ class SSHClient:  # pragma: no coverage
             # Reading from output streams
             while channel.recv_ready():
                 received = channel.recv(1000)
-                sys.stdout.write(received.decode())
+                sys.stdout.write(colorama.Fore.CYAN + received.decode()
+                                 + colorama.Fore.RESET)
                 sys.stdout.flush()
 
             while channel.recv_stderr_ready():
                 received = channel.recv_stderr(1000)
-                sys.stderr.write(received.decode())
+                sys.stderr.write(colorama.Fore.RED + received.decode() +
+                                 colorama.Fore.RESET)
                 sys.stderr.flush()
 
             if channel.exit_status_ready():  # If completed
@@ -144,8 +159,8 @@ class Builder:
         self.key = self.make_new_key()
         self.sec_grp, self.group_id = self.make_new_group()
 
-        print("New key {} created".format(self.key.name))
-        print("new security group {} created".format(self.sec_grp.group_name))
+        printy("New key {} created".format(self.key.name))
+        printy("new security group {} created".format(self.sec_grp.group_name))
 
         return self
 
@@ -154,7 +169,7 @@ class Builder:
         In case things get fucked up, and we encouter exceptions,
         the keys and sg created are removed.
         """
-        print("Cleaning after myself...")
+        printy("Cleaning after myself...")
         self.key.delete()
         if self.instance:
             self.instance.terminate()
@@ -163,7 +178,7 @@ class Builder:
 
         self.sec_grp.delete()
         os.remove(self.key.name + ".pem")
-        print("Builder teardown complete")
+        printy("Builder teardown complete")
 
     def make_new_key(self):
         key_name = random_name("tmp_key_", 10)
@@ -209,9 +224,9 @@ class Builder:
         )
 
         # We are not launching more than one, so grab the first
-        print("Instance {} launched".format(self.reservation[0]))
+        printy("Instance {} launched".format(self.reservation[0]))
         self.instance = self.reservation[0]
-        print("Waiting for instance to run ...")
+        printy("Waiting for instance to run ...")
         self.instance.wait_until_running()
 
     def wait_for_status(self, status):
@@ -243,10 +258,10 @@ class Builder:
                 /ec2.html#EC2.Instance.state
         """
         self.wait_for_status(16)
-        print("The instance is now running ...")
+        printy("The instance is now running ...")
         # The instance is running, but we give it 60 more seconds for running
         # SSHD
-        print("Waiting 60 seconds for SSH server to start ...")
+        printy("Waiting 60 seconds for SSH server to start ...")
         time.sleep(60)
 
     @timeout(1200, "Copying files took too long ...")
@@ -260,11 +275,11 @@ class Builder:
             else:
                 for src, dst in self.config["uploads"].items():
                     self.ssh_client.copy(src, dst)
-                    print("Successfully uploaded {} to {}".format(src, dst))
+                    printy("Successfully uploaded {} to {}".format(src, dst))
 
     @timeout(1200, "Configure took too long ...")
     def configure(self):
-        print("starting configuration of instance")
+        printy("starting configuration of instance")
         if not self.ssh_client:  # pragma: no coverage
             ssh_client = SSHClient(host=self.instance.public_ip_address,
                                    port=22, username=self.config["user"],
@@ -273,11 +288,13 @@ class Builder:
             ssh_client = self.ssh_client
 
         for command in self.config["commands"]:
-            print("Executing: {}".format(command))
+            printy("Executing: {}".format(command))
             command_result = ssh_client.execute(command)
             ok = command_result['retval'] == 0
-            print("Command '{}' {}".format(command,
-                                           "succeeded" if ok else "failed!"))
+            if ok:
+                printg("Command '{}' succeeded".format(command))
+            else:
+                printr("Command '{}' failed".format(command))
             # if 'out' in command_result:
             #    print(''.join(command_result['out']))
 
@@ -286,7 +303,7 @@ class Builder:
             #         print("Here are the errors:")
             #        print(''.join(command_result['err']))
 
-        print("Finished configuration of instance")
+        printy("Finished configuration of instance")
 
     def is_image_complete(self):
         self.image.reload()
@@ -297,7 +314,7 @@ class Builder:
 
     @timeout(1200, "Creating of image took too long ...")
     def create_image(self):
-        print("Creating Image ...")
+        printy("Creating Image ...")
         self.image = self.instance.create_image(Name=self.name)
         if self.tags:
             tags = [[{"Key": k, "Value": v} for k, v in t.items()][0] for t in
@@ -309,18 +326,22 @@ class Builder:
                       "Value": self.desc}, {"Key": "Name",
                                             "Value": self.name}])
         self.image.create_tags(Tags=tags)
-        print("Successuflly created {}".format(self.image.id))
-        print("Waiting for the image to become available")
+        printy("Successuflly created {}".format(self.image.id))
+        printy("Waiting for the image to become available")
 
         while not self.is_image_complete():  # pragma: no coverage
             time.sleep(5)
 
-        print("You image is now ready!")
+        printy("You image is now ready!")
 
 
 def get_parser():  # pragma: no coverage
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument("--no-color", action='store_true',
+                        help="Disable colored output")
+
     subparsers = parser.add_subparsers(dest="cmd")
+
     baker = subparsers.add_parser("bake", description="Create an AMI image")
     baker.add_argument("image", type=str, help="Image JSON description")
 
@@ -332,6 +353,7 @@ def get_parser():  # pragma: no coverage
 
     info = subparsers.add_parser("info", description="Show all info of an AMI")
     info.add_argument("imageId", type=str, help="AMI id")
+
     return parser
 
 
@@ -342,7 +364,7 @@ def list_images(ec2):  # pragma: no coverage
     response = ec2.describe_images(Filters=[{'Name': 'is-public',
                                              'Values': ['false']}])
     response.pop('ResponseMetadata')
-    print("{:12}\t{:20}\t\tCreationDate:".format("ImageId", "Name"))
+    printy("{:12}\t{:20}\t\tCreationDate:".format("ImageId", "Name"))
 
     for image in response['Images']:
         if len(image["Name"]) > 20:
@@ -364,7 +386,7 @@ def list_details(ec2, image_id):  # pragma: no coverage
         if key.startswith("_"):
             continue
         else:
-            print(key + ":")
+            printy(key + ":")
             pprint(value)
 
 
@@ -373,7 +395,7 @@ def delete_image(ec2, image_id):
     Delete image
     """
     image = ec2.Image(image_id)
-    print("Derigestering ...")
+    printr("Derigestering ...")
     resp = image.deregister()
     return resp
 
@@ -385,7 +407,9 @@ def validate_image_name(ec2, name):
     response = ec2.describe_images(
         Filters=[{'Name': 'is-public', 'Values': ['false']},
                  {'Name': 'name', 'Values': [name]}])
-    return response['Images']
+
+    if response['Images'] and 'State' in response['Images'][0]:
+        return True
 
 
 def bake(ec2, image):  # pragma: no coverage
@@ -394,7 +418,7 @@ def bake(ec2, image):  # pragma: no coverage
 
     check_config(config_dict)
     if validate_image_name(ec2.meta.client, config_dict['name']):
-        print("An image named '{}' already exists!!!".format(
+        printr("An image named '{}' already exists!!!".format(
             config_dict['name']))
         sys.exit(2)
 
@@ -409,6 +433,9 @@ def bake(ec2, image):  # pragma: no coverage
 def main():  # pragma: no coverage
     parser = get_parser()
     options = parser.parse_args()
+
+    colorama.init(strip=options.no_color)
+
     if not options.cmd:
         parser.print_help()
 
