@@ -1,6 +1,7 @@
 # Wolkenbrot
 
 ## bakes and manages your AWS cloud images
+![demo](https://github.com/oz123/wolkenbrot/blob/master/docs/demo.gif?raw=true)
 
 wolkenbrot is named after a German children's title called Wolkenbrot by
 the Korean authors Baek Hee Na Kim Hyang Soo. The translation to English is
