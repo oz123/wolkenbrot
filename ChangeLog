@@ -1,6 +1,24 @@
 CHANGES
 =======
 
+0.2
+---
+
+* add demo gif
+* Add demo
+* Add nice color output
+* Don't start the build if the name already exists
+* Output ssh exec in nearly real time
+* Make the example work when debian wants input
+* Update changelog
+* Update the description
+* Initial commit
+* Add Changelog and Authors
+* Add examples
+* Initial commit of Wolkenbrot
+CHANGES
+=======
+
 0.1.1
 -----
 
