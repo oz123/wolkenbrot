@@ -1,0 +1,21 @@
+[[source]]
+
+verify_ssl = true
+url = "https://pypi.python.org/simple"
+name = "pypi"
+
+
+[dev-packages]
+
+
+
+[packages]
+
+"boto3" = "*"
+paramiko = "*"
+colorama = "*"
+
+
+[requires]
+
+python_version = "3.6"
