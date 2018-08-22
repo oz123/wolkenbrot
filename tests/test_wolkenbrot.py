@@ -5,7 +5,7 @@ import pytest
 
 from moto import mock_ec2
 
-from wolkenbrot import check_config, BadConfigFile
+from wolkenbrot.util import check_config, BadConfigFile
 from wolkenbrot import Builder, delete_image
 
 
