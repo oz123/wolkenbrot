@@ -9,29 +9,8 @@ import boto3
 import colorama
 
 from .util import check_config, printr, printy
-from .aws import Builder
-
-
-def get_parser():  # pragma: no coverage
-    parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument("--no-color", action='store_true',
-                        help="Disable colored output")
-
-    subparsers = parser.add_subparsers(dest="cmd")
-
-    baker = subparsers.add_parser("bake", description="Create an AMI image")
-    baker.add_argument("image", type=str, help="Image JSON description")
-
-    subparsers.add_parser("list", description="List your private AMI images")
-
-    delete = subparsers.add_parser("delete",
-                                   description="Delete your private AMI image")
-    delete.add_argument("imageId", type=str, help="AMI id")
-
-    info = subparsers.add_parser("info", description="Show all info of an AMI")
-    info.add_argument("imageId", type=str, help="AMI id")
-
-    return parser
+from .aws import AWSBuilder as Builder
+from .cli import main
 
 
 def list_images(ec2):  # pragma: no coverage
@@ -94,6 +73,7 @@ def bake(ec2, image):  # pragma: no coverage
         config_dict = json.load(fd)
 
     check_config(config_dict)
+
     if validate_image_name(ec2.meta.client, config_dict['name']):
         printr("An image named '{}' already exists!!!".format(
             config_dict['name']))
@@ -105,27 +85,3 @@ def bake(ec2, image):  # pragma: no coverage
         builder.copy_files()
         builder.configure()
         builder.create_image()
-
-
-def main():  # pragma: no coverage
-    parser = get_parser()
-    options = parser.parse_args()
-
-    colorama.init(strip=options.no_color)
-
-    if not options.cmd:
-        parser.print_help()
-
-    ec2 = boto3.resource('ec2')
-
-    if options.cmd == 'list':
-        list_images(ec2.meta.client)
-
-    if options.cmd == 'info':
-        list_details(ec2, options.imageId)
-
-    if options.cmd == 'delete':
-        delete_image(ec2, options.imageId)
-
-    if options.cmd == 'bake':
-        bake(ec2, options.image)

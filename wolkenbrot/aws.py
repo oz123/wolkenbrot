@@ -5,7 +5,7 @@ from getpass import getuser
 from .util import timeout, printr, printg, printy, random_name, SSHClient
 
 
-class Builder:
+class AWSBuilder:
 
     def __init__(self, ec2, config_params):
         self.ec2 = ec2
@@ -22,7 +22,7 @@ class Builder:
 
     def __enter__(self):
         """
-        __enter__ is called after __init__, thus key as sg are only
+        __enter__ is called after __init__, thus keys are only
         created if __init__ was complete.
         """
         self.key = self.make_new_key()
