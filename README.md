@@ -94,6 +94,6 @@ pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
 Simply issue:
 
 ```
-   $ pip install -e ".[testing]"
+   $ pip install -e ".[dev]"
 	 $ make test
 ```
