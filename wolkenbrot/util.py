@@ -1,3 +1,11 @@
+# ===========================================================================
+# This file is part of Wolkenbrot.
+#
+# Wolkenbrot is free software; you can redistribute it and/or modify
+# it under the terms of the MIT license.
+# ============================================================================
+# Copyright (C) 2017-2019 Oz Nahum Tiram <oz.tiram@gmail.com>
+# ============================================================================
 import functools
 import os
 import random
