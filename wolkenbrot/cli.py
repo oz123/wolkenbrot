@@ -1,3 +1,9 @@
+import argparse
+import sys
+
+import boto3
+import colorama
+
 def get_parser():  # pragma: no coverage
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("--no-color", action='store_true',
@@ -43,7 +49,7 @@ def get_client_opts():
 
 
 def main():
-    options, client = get_opts_client()
+    options, client = get_client_opts()
 
     if options.cmd == 'list':
         list_images(client.meta.client)
