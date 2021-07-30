@@ -1,3 +1,4 @@
+from datetime import date
 from getpass import getuser
 from .util import timeout, printr, printg, printy, random_name, SSHClient
 
@@ -18,16 +19,50 @@ class OpenStackBuilder:
         self.ssh_client = None
 
     def __enter__(self):
-        pass
+        """
+        __enter__ is called after __init__, thus keys are only
+        created if __init__ was complete.
+        """
+        self.key = self.make_new_key()
+        self.sec_grp, self.group_id = self.make_new_group()
 
-    def __exit__(self):
+        printy("New key {} created".format(self.key.name))
+        printy("new security group {} created".format(self.sec_grp.group_name))
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
     def make_new_key(self):
-        pass
+        print("Creating keypair for imaging machine...")
+        key_name = random_name("tmp_key_", 10)
+        if self.client.get_keypair(key_name):
+            self.client.delete_keypair(key_name)
+        keypair = self.client.create_keypair(key_name)
+        return keypair
 
     def make_new_group(self):
-        pass
+        print("Creating security group")
+        name = 'wolkenbrot-image-creator-{}'.format(str(date.today()))
+        if self.client.get_security_group(name):
+            self.client.delete_security_group(name)
+
+        sec_group = self.client.create_security_group(name, 'temporary security '
+                                                     'for builder.')
+
+        print("Creating security group rules")
+        # allow outgoing TCP
+        self.client.create_security_group_rule(sec_group.id, 1, 65535, 'tcp',
+                                              '0.0.0.0/0', direction='egress')
+        # allow outgoing UDP
+        self.client.create_security_group_rule(sec_group.id, 1, 65535, 'udp',
+                                              '0.0.0.0/0', direction='egress')
+        # allow ingoing SSH
+        self.client.create_security_group_rule(sec_group.id, 22, 22, 'tcp',
+                                              '0.0.0.0/0', direction='ingress')
+
+        return sec_group, sec_group.id
 
     @timeout(600, "launch instance timed out!")
     def launch(self):
