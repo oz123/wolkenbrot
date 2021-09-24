@@ -1,14 +1,16 @@
+import inspect
 import time
 from datetime import date, datetime
+from pprint import pprint
+
+import openstack
+import paramiko
+
 from .common import Builder
 from .util import timeout, printr, printg, printy, random_name, SSHClient
 
 from paramiko.ssh_exception import (NoValidConnectionsError,
                                     AuthenticationException)
-
-import openstack
-import paramiko
-
 CLIENT = openstack.connect()
 
 
@@ -127,15 +129,29 @@ def list_images(CLIENT):
         print("{id}\t{name:20}\t\t{created}".format(**image))
     
 
+def list_details(CLIENT, image_id):
+    image = CLIENT.image.find_image("00fe5e3a-7c97-4071-be12-6ce7d1a5ecf5")
+    def _filter_attrs(obj):
+        if isinstance(obj, property) or isinstance(obj, (str, list)):
+            return True
+
+    for key, value in inspect.getmembers(image, predicate=_filter_attrs):
+        if key.startswith("_"):
+            continue
+        else:
+            printy(key + ":")
+            pprint(value)
+
+
 def action(options):
     if options.cmd == 'list':
         list_images(CLIENT)
 
     if options.cmd == 'info':
-        list_details(client, options.imageId)
+        list_details(CLIENT, options.imageId)
 
     if options.cmd == 'delete':
-        delete_image(client, options.imageId)
+        delete_image(CLIENT, options.imageId)
 
     if options.cmd == 'bake':
-        bake(client, options.image)
+        bake(CLIENT, options.image)
