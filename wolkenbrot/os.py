@@ -143,6 +143,11 @@ def list_details(CLIENT, image_id):
             pprint(value)
 
 
+def delete_image(CLIENT, image_id):
+    printr("Deleting ...")
+    CLIENT.image.delete_image(image_id, ignore_missing=True)
+
+
 def action(options):
     if options.cmd == 'list':
         list_images(CLIENT)
