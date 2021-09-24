@@ -3,11 +3,8 @@ import json
 from pprint import pprint
 import sys
 
-import boto3
 
 import colorama
-
-from .aws import AWSBuilder
 
 from .util import check_config, printr, printy
 
@@ -48,31 +45,15 @@ def get_client_opts():
         parser.print_help()
         sys.exit(1)
 
-    if options.openstack:
-        from wolkenbrot.os import CLIENT as client
-    else:
-        client = boto3.resource('ec2')
-
-    return options, client
+    return options
 
 
 def main():
-    options, client = get_client_opts()
+    options = get_client_opts()
 
     if options.openstack:
         from wolkenbrot.os import action
         action(options)
-        sys.exit(0)
     else:
         from wolkenbrot.aws import action
-    if options.cmd == 'list':
-        list_images(client.meta.client)
-
-    if options.cmd == 'info':
-        list_details(client, options.imageId)
-
-    if options.cmd == 'delete':
-        delete_image(client, options.imageId)
-
-    if options.cmd == 'bake':
-        bake(client, options.image)
+        action(options)

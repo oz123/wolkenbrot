@@ -7,10 +7,14 @@ import time
 from getpass import getuser
 from pprint import pprint
 
+import boto3
+
 from .common import Builder
 from .util import (check_config, timeout, printr, printg, printy,
                    random_name, SSHClient)
 
+
+CLIENT  = boto3.resource('ec2')
 
 class AWSBuilder(Builder):
 
@@ -243,3 +247,17 @@ def bake(ec2, image):  # pragma: no coverage
         builder.copy_files()
         builder.configure()
         builder.create_image()
+
+
+def action(options):
+    if options.cmd == 'list':
+        list_images(CLIENT.meta.client)
+
+    if options.cmd == 'info':
+        list_details(CLIENT, options.imageId)
+
+    if options.cmd == 'delete':
+        delete_image(CLIENT, options.imageId)
+
+    if options.cmd == 'bake':
+        bake(CLIENT, options.image)
