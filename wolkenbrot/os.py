@@ -1,16 +1,21 @@
 import inspect
+import json
+import sys
 import time
+
 from datetime import date, datetime
 from pprint import pprint
 
 import openstack
 import paramiko
 
-from .common import Builder
-from .util import timeout, printr, printg, printy, random_name, SSHClient
-
 from paramiko.ssh_exception import (NoValidConnectionsError,
                                     AuthenticationException)
+
+from .common import Builder
+from .util import (check_config, timeout, printr, printg,
+                   printy, random_name, SSHClient)
+
 CLIENT = openstack.connect()
 
 
@@ -124,6 +129,7 @@ class OpenStackBuilder(Builder):
     def create_image(self):
         pass
 
+
 def list_images(CLIENT):
     for image in CLIENT.list_images():
         print("{id}\t{name:20}\t\t{created}".format(**image))
@@ -146,6 +152,34 @@ def list_details(CLIENT, image_id):
 def delete_image(CLIENT, image_id):
     printr("Deleting ...")
     CLIENT.image.delete_image(image_id, ignore_missing=True)
+
+
+def validate_image_name(ec2, name):
+    """
+    Check that an image with that name does not already exist
+    """
+    response = CLIENT.image.find_image("Rancheros Openstack")
+
+    return True if response else False
+
+
+def bake(CLIENT, image):  # pragma: no coverage
+    with open(image, "r") as fd:
+        config_dict = json.load(fd)
+
+    check_config(config_dict)
+
+    if validate_image_name(CLIENT, config_dict['name']):
+        printr("An image named '{}' already exists!!!".format(
+            config_dict['name']))
+        sys.exit(2)
+
+    with OpenStackBuilder(CLIENT, config_dict) as builder:
+        builder.launch()
+        builder.wait_for_ssh()
+        builder.copy_files()
+        builder.configure()
+        builder.create_image()
 
 
 def action(options):
