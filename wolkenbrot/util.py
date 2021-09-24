@@ -70,6 +70,10 @@ def check_config(config):
     """
     rq = {"name", "description", "region", "user", "instance_type",
           "base_image", "uploads", "commands"}
+
+    if config['provider'] == 'openstack':
+        rq.remove('region')
+
     diff = rq - set(config.keys())
     if diff:
         raise(BadConfigFile("Missing keys {} in config".format(diff)))

@@ -1,8 +1,16 @@
 import argparse
+import json
+from pprint import pprint
 import sys
 
 import boto3
+
 import colorama
+
+from .aws import AWSBuilder
+
+from .util import check_config, printr, printy
+
 
 def get_parser():  # pragma: no coverage
     parser = argparse.ArgumentParser(add_help=True)
@@ -41,7 +49,7 @@ def get_client_opts():
         sys.exit(1)
 
     if options.openstack:
-        client = object()
+        from wolkenbrot.os import CLIENT as client
     else:
         client = boto3.resource('ec2')
 
@@ -51,6 +59,12 @@ def get_client_opts():
 def main():
     options, client = get_client_opts()
 
+    if options.openstack:
+        from wolkenbrot.os import action
+        action(options)
+        sys.exit(0)
+    else:
+        from wolkenbrot.aws import action
     if options.cmd == 'list':
         list_images(client.meta.client)
 

@@ -1,13 +1,18 @@
 import time
 from datetime import date, datetime
+from .common import Builder
 from .util import timeout, printr, printg, printy, random_name, SSHClient
 
 from paramiko.ssh_exception import (NoValidConnectionsError,
                                     AuthenticationException)
+
+import openstack
 import paramiko
 
+CLIENT = openstack.connect()
 
-class OpenStackBuilder:
+
+class OpenStackBuilder(Builder):
 
     def __init__(self, client, config_params):
         self.client = client
@@ -22,19 +27,6 @@ class OpenStackBuilder:
         self.instance = None
         self.ssh_client = None
         self.sec_group_id = None
-
-    def __enter__(self):
-        """
-        __enter__ is called after __init__, thus keys are only
-        created if __init__ was complete.
-        """
-        self.key = self.make_new_key()
-        self.sec_grp, self.group_id = self.make_new_group()
-
-        printy("New key {} created".format(self.key.name))
-        printy("new security group {} created".format(self.sec_grp.group_name))
-
-        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
@@ -123,18 +115,27 @@ class OpenStackBuilder:
 
         raise ValueError('Could not connect to the machine via SSH.')
 
-
-    @timeout(1200, "Copying files took too long ...")
-    def copy_files(self):
-        pass
-
-    @timeout(1200, "Configure took too long ...")
-    def configure(self):
-        pass
-
     def is_image_complete(self):
         pass
 
     @timeout(1200, "Creating of image took too long ...")
     def create_image(self):
         pass
+
+def list_images(CLIENT):
+    for image in CLIENT.list_images():
+        print("{id}\t{name:20}\t\t{created}".format(**image))
+    
+
+def action(options):
+    if options.cmd == 'list':
+        list_images(CLIENT)
+
+    if options.cmd == 'info':
+        list_details(client, options.imageId)
+
+    if options.cmd == 'delete':
+        delete_image(client, options.imageId)
+
+    if options.cmd == 'bake':
+        bake(client, options.image)
