@@ -25,7 +25,6 @@ class OpenStackBuilder(Builder):
         self.client = client
         self.name = config_params["name"]
         self.desc = config_params["description"]
-        self.region = config_params["region"]
         self.instance_type = config_params["instance_type"]
         self.image = config_params["base_image"]
         self.config = config_params
@@ -160,7 +159,7 @@ def validate_image_name(ec2, name):
     """
     response = CLIENT.image.find_image("Rancheros Openstack")
 
-    return True if response else False
+    return False if response else True
 
 
 def bake(CLIENT, image):  # pragma: no coverage
