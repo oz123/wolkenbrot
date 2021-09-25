@@ -155,13 +155,11 @@ def delete_image(CLIENT, image_id):
     CLIENT.image.delete_image(image_id, ignore_missing=True)
 
 
-def validate_image_name(ec2, name):
+def validate_image_name(CLIENT, name):
     """
     Check that an image with that name does not already exist
     """
-    response = CLIENT.image.find_image("Rancheros Openstack")
-
-    return False if response else True
+    return CLIENT.image.find_image(name)
 
 
 def bake(CLIENT, image):  # pragma: no coverage
