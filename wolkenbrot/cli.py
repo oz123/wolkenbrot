@@ -1,12 +1,9 @@
 import argparse
-import json
-from pprint import pprint
 import sys
-
 
 import colorama
 
-from .util import check_config, printr, printy
+from .util import check_config, printr
 
 
 def get_parser():  # pragma: no coverage
