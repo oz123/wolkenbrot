@@ -71,7 +71,7 @@ class AWSBuilder(Builder):
                             'IpRanges': [{'CidrIp': '0.0.0.0/0'}, ],
                             }])
 
-        return sec_group, sec_group.id
+        return sec_group.group_name, sec_group.id, sec_group
 
     @timeout(600, "launch instance timed out!")
     def launch(self):

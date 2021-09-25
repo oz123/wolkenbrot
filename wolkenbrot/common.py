@@ -6,9 +6,10 @@ class Builder:
 
         self.config = config_params
         self.instance = None
-        self.group_id = None
+        self.sec_group_id = None
         self.key = None
-        self.sec_grp = NotImplementedError
+        self.sec_grp = None
+        self.sec_group_id = None
         self.ssh_client = None
 
     def make_new_key(self):
@@ -23,10 +24,11 @@ class Builder:
         created if __init__ was complete.
         """
         self.key = self.make_new_key()
-        self.sec_grp, self.group_id = self.make_new_group()
-
+        sec_grp_name, self.sec_group_id, self.sec_grp = self.make_new_group()
+        assert self.sec_grp
+        assert self.sec_group_id
         printy("New key {} created".format(self.key.name))
-        printy("new security group {} created".format(self.sec_grp.group_name))
+        printy("new security group {} created".format(sec_grp_name))
 
         return self
 

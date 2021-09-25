@@ -26,13 +26,16 @@ class OpenStackBuilder(Builder):
         self.name = config_params["name"]
         self.desc = config_params["description"]
         self.instance_type = config_params["instance_type"]
-        self.image = config_params["base_image"]
+        self.image = CLIENT.image.find_image(config_params["base_image"]["name"])
+        if not self.image:
+            raise ValueError("Could not find base image")
         self.config = config_params
         self.tags = config_params.get("tags")
         self.key = None
         self.instance = None
         self.ssh_client = None
         self.sec_group_id = None
+        self.sec_group = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
@@ -65,7 +68,7 @@ class OpenStackBuilder(Builder):
         self.client.create_security_group_rule(sec_group.id, 22, 22, 'tcp',
                                               '0.0.0.0/0', direction='ingress')
 
-        return sec_group, sec_group.id
+        return sec_group.name, sec_group.id, sec_group
 
     @timeout(600, "launch instance timed out!")
     def launch(self):
