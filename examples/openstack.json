@@ -1,13 +1,14 @@
 {
-"name": "short_",
+"name": "wolken-image-openstack",
 "provider": "openstack",
 "description": "Short example for testing.",
 "user": "ubuntu",
 "cloud": "devops",
-"instance_type": "t2.micro",
+"network": "kiosk-net",
+"instance_type": "ECS.GP1.2-8",
 "base_image": {
-    "doc-string": "These are the U16.04 amd64 ebs images as of 17-Mar-2021",
-    "de-nbg6-1": "focal-server-generic"
+    "doc-string": "This is the base image as of 17-Mar-2021",
+    "name": "ubuntu-focal-cloud-2021-09-24"
 },
 "tags": [{"owner": "oznt"}, {"project": "my project"}],
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
