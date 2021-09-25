@@ -72,16 +72,15 @@ class OpenStackBuilder(Builder):
 
     @timeout(600, "launch instance timed out!")
     def launch(self):
-        machine = self.client.create_server(
+        self.instance = self.client.create_server(
             'wolkenbrot-image-creator-{}'.format(datetime.now().strftime("%Y-%m-%d_%H:%M")),  # noqa
-            flavor=self.config['flavor'],
-            network=self.config['networks'],
+            flavor=self.config['instance_type'],
+            network=self.config['network'],
             security_groups=self.sec_group_id,
             image=self.image.id,
             key_name=self.key.id,
             userdata='manage_etc_hosts: true'
         )
-        self.instance = machine
 
     def wait_for_status(self, status):
         """
@@ -104,7 +103,7 @@ class OpenStackBuilder(Builder):
         if self.instance.public_v4:
             ip = self.instance.public_v4
         else:
-            ip = self.instance['addresses'][self.config['networks'][0]][0]['addr']
+            ip = self.instance['addresses'][self.config['network'][0]][0]['addr']
 
         print(f"Connecting to {ip} using key {self.key.name}")
 
