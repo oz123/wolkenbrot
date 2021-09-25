@@ -81,36 +81,38 @@ class OpenStackBuilder(Builder):
             key_name=self.key.id,
             userdata='manage_etc_hosts: true'
         )
+        self.wait_for_status("ACTIVE")
+        # TODO: add floating IP if the config specifies it
 
-    def wait_for_status(self, status):
+    def wait_for_status(self, status, n_seconds=3):
         """
         Wait of OS Instance to reach a certain status
 
         BULDING
-        RUNNING
+        RUNNING = ACTIVE
         DELELTING
         """
 
         while self.instance.status != status:
             print(
-                "Instance: %s is in in %s state, sleeping for 5 more seconds",
-            self.instance.name, self.instance.status)
+                "Instance: %s is in in %s state, sleeping for %s more seconds" %
+                (self.instance.name, self.instance.status, n_seconds))
             self.instance = self.client.get_server(self.instance.id)
-            time.sleep(5)
-        
+            time.sleep(n_seconds)
+
     @timeout(600, "waiting for SSH timesout!")
     def wait_for_ssh(self):
         if self.instance.public_v4:
-            ip = self.instance.public_v4
+            ip_addr = self.instance.public_v4
         else:
-            ip = self.instance['addresses'][self.config['network'][0]][0]['addr']
+            ip_addr = self.instance['addresses'][self.config['network']][0]['addr']
 
-        print(f"Connecting to {ip} using key {self.key.name}")
+        print(f"Connecting to {ip_addr} using key {self.key.name}")
 
         for i in range(0, 15):
             try:
                 # TODO: fix hard coded user here
-                client = SSHClient(ip, 22, 'ubuntu', None,
+                client = SSHClient(ip_addr, 22, 'ubuntu', None,
                                    self.key.private_key, None)
                 return client
             except paramiko.ssh_exception.PasswordRequiredException as excep:
