@@ -50,14 +50,17 @@ class OpenStackBuilder(Builder):
         if self.key:
             print(f"Deleting keypair {self.key.name}...")
             self.client.delete_keypair(self.key.id)
+        # TODO: add clean volume
 
     def _shutdown_machine(self):
         print("Shutdown imaging machine...")
-        self.client.compute.stop_server(self.instance.id)
+        if self.client.get_server(self.instance.id).status != 'SHUTOFF':
+            self.client.compute.stop_server(self.instance.id)
 
     def _destroy_machine(self):
-        print("Destroy imaging machine...")
-        self.client.delete_server(self.instance.id, wait=True, timeout=360)
+        if self.client.get_server(self.instance.id):
+            print("Destroy imaging machine...")
+            self.client.delete_server(self.instance.id, wait=True, timeout=360)
 
     def make_new_key(self):
         print("Creating keypair for imaging machine...")
@@ -98,6 +101,8 @@ class OpenStackBuilder(Builder):
             security_groups=self.sec_group_id,
             image=self.image.id,
             key_name=self.key.id,
+            boot_from_volume=True,
+            volume_size=25,
             userdata='manage_etc_hosts: true'
         )
         self.wait_for_status("ACTIVE")
@@ -153,7 +158,37 @@ class OpenStackBuilder(Builder):
 
     @timeout(1200, "Creating of image took too long ...")
     def create_image(self):
-        pass
+        """
+        This method is responsible of creating the image.
+        """
+        self._shutdown_machine()
+        self._destroy_machine()
+        image_name = self.config['name']
+        print(f'Creating image {image_name}')
+        # delete image for this date if already existing
+        if self.client.get_image(image_name):
+            self.client.delete_image(image_name, wait=True, timeout=360)
+
+        print('Waiting for volume to be available')
+        for i in range(0, 360):
+            status = self.client.get_volume(self.instance.volumes[0].id).status
+            print("Status of volume is {}".format(status))
+            if status == 'available':
+                break
+            time.sleep(10)
+
+        if status != 'available':
+            raise RuntimeError('Volume was has not become available during the allowed'
+                               'time!')
+
+        print('Creating image...')
+        image = self.client.create_image(
+            image_name,
+            wait=True,
+            timeout=3600,
+            disk_format='raw',
+            volume=self.instance.volumes[0].id
+        )
 
 
 def list_images(CLIENT):
