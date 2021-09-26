@@ -10,7 +10,7 @@ cloud's bread.
 Wolken brot is inspired and packer[1] kujenga[2], removing fabric as a
 dependency. It also aims to be more tested and documented.
 
-In case you woder, yes it's similar to packer by Hashicorp.
+In case you wonder, yes it's similar to packer by Hashicorp.
 But here are some reasons that you might like it better than packer:
 
 1. It's written in Python.
