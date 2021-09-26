@@ -35,25 +35,13 @@ class Builder:
     @timeout(1200, "Copying files took too long ...")
     def copy_files(self):
         if self.config.get("uploads"):
-            if not self.ssh_client:  # pragma: no coverage
-                self.ssh_client = SSHClient(
-                    host=self.instance.public_ip_address, port=22,
-                    username=self.config["user"], password="",
-                    key=self.key.key_material)
-            else:
-                for src, dst in self.config["uploads"].items():
-                    self.ssh_client.copy(src, dst)
-                    printy("Successfully uploaded {} to {}".format(src, dst))
+            for src, dst in self.config["uploads"].items():
+                self.ssh_client.copy(src, dst)
+                printy("Successfully uploaded {} to {}".format(src, dst))
 
     @timeout(1200, "Configure took too long ...")
     def configure(self):
-        printy("starting configuration of instance")
-        if not self.ssh_client:  # pragma: no coverage
-            ssh_client = SSHClient(host=self.instance.public_ip_address,
-                                   port=22, username=self.config["user"],
-                                   password="", key=self.key.key_material)
-        else:
-            ssh_client = self.ssh_client
+        ssh_client = self.ssh_client
 
         for command in self.config["commands"]:
             printy("Executing: {}".format(command))

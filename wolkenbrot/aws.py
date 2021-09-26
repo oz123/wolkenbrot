@@ -8,6 +8,10 @@ from getpass import getuser
 from pprint import pprint
 
 import boto3
+import paramiko
+
+from paramiko.ssh_exception import (NoValidConnectionsError,
+                                    AuthenticationException)
 
 from .common import Builder
 from .util import (check_config, timeout, printr, printg, printy,
@@ -129,21 +133,30 @@ class AWSBuilder(Builder):
         printy("The instance is now running ...")
         # The instance is running, but we give it 60 more seconds for running
         # SSHD
-        printy("Waiting 60 seconds for SSH server to start ...")
+        ip_addr = self.instance.public_ip_address,
+        print(f"Connecting to {ip_addr} using key {self.key.name}")
+
+        for i in range(0, 15):
+            try:
+                self.ssh_client = SSHClient(ip_addr, 22, self.config["user"], None,
+                                   self.key.private_key, None)
+            except paramiko.ssh_exception.PasswordRequiredException as excep:
+                raise excep
+            except (NoValidConnectionsError, TimeoutError,
+                    AuthenticationException) as e:
+                print(f'Connection failed, it is likely that server is not '
+                      f'ready yet. Wait 4 seconds and retry. {e}')
+                time.sleep(4)
+
+        raise ValueError('Could not connect to the machine via SSH.')
         time.sleep(60)
 
     @timeout(1200, "Copying files took too long ...")
     def copy_files(self):
         if self.config.get("uploads"):
-            if not self.ssh_client:  # pragma: no coverage
-                self.ssh_client = SSHClient(
-                    host=self.instance.public_ip_address, port=22,
-                    username=self.config["user"], password="",
-                    key=self.key.key_material)
-            else:
-                for src, dst in self.config["uploads"].items():
-                    self.ssh_client.copy(src, dst)
-                    printy("Successfully uploaded {} to {}".format(src, dst))
+            for src, dst in self.config["uploads"].items():
+                self.ssh_client.copy(src, dst)
+                printy("Successfully uploaded {} to {}".format(src, dst))
 
     def is_image_complete(self):
         self.image.reload()
