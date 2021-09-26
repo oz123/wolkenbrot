@@ -40,7 +40,7 @@ class OpenStackBuilder(Builder):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._shutdown_machine()
         self._destroy_machine()
-        # TODO: add cleaning of security group
+        self.client.delete_security_group(self.sec_group_id)
 
     def _shutdown_machine(self):
         print("Shutdown imaging machine...")
