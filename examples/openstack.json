@@ -4,7 +4,10 @@
 "description": "Short example for testing.",
 "user": "ubuntu",
 "cloud": "devops",
-"network": "kiosk-net",
+"network": {
+    "name": "kiosk-net",
+	"floating-ip": "true"
+    },
 "instance_type": "ECS.GP1.2-8",
 "base_image": {
     "doc-string": "This is the base image as of 17-Mar-2021",

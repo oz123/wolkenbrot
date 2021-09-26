@@ -75,14 +75,20 @@ class OpenStackBuilder(Builder):
         self.instance = self.client.create_server(
             'wolkenbrot-image-creator-{}'.format(datetime.now().strftime("%Y-%m-%d_%H:%M")),  # noqa
             flavor=self.config['instance_type'],
-            network=self.config['network'],
+            network=self.config['network']["name"],
             security_groups=self.sec_group_id,
             image=self.image.id,
             key_name=self.key.id,
             userdata='manage_etc_hosts: true'
         )
         self.wait_for_status("ACTIVE")
-        # TODO: add floating IP if the config specifies it
+
+        if self.config["network"].get('floating-ip'):
+            fip = self.client.create_floating_ip()
+            self.client.compute.add_floating_ip_to_server(self.instance.id,
+                                                          fip.floating_ip_address)
+
+            self.instance = self.client.get_server(self.instance.id)
 
     def wait_for_status(self, status, n_seconds=3):
         """
