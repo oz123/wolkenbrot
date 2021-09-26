@@ -121,16 +121,15 @@ class OpenStackBuilder(Builder):
         if self.instance.public_v4:
             ip_addr = self.instance.public_v4
         else:
-            ip_addr = self.instance['addresses'][self.config['network']][0]['addr']
+            ip_addr = self.instance['addresses'][self.config['network']["name"]][0]['addr']
 
         print(f"Connecting to {ip_addr} using key {self.key.name}")
 
         for i in range(0, 15):
             try:
-                # TODO: fix hard coded user here
-                client = SSHClient(ip_addr, 22, 'ubuntu', None,
+                self.ssh_client = SSHClient(ip_addr, 22, self.config["user"], None,
                                    self.key.private_key, None)
-                return client
+                return
             except paramiko.ssh_exception.PasswordRequiredException as excep:
                 raise excep
             except (NoValidConnectionsError, TimeoutError,
