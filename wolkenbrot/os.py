@@ -35,12 +35,21 @@ class OpenStackBuilder(Builder):
         self.instance = None
         self.ssh_client = None
         self.sec_group_id = None
-        self.sec_group = None
+        self.sec_grp = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self._shutdown_machine()
-        self._destroy_machine()
-        self.client.delete_security_group(self.sec_group_id)
+        self.clean()
+
+    def clean(self):
+        if self.instance:
+            self._shutdown_machine()
+            self._destroy_machine()
+        if self.sec_group_id:
+            print(f"Deleting security groups {self.sec_grp.name}...")
+            self.client.delete_security_group(self.sec_group_id)
+        if self.key:
+            print(f"Deleting keypair {self.key.name}...")
+            self.client.delete_keypair(self.key.id)
 
     def _shutdown_machine(self):
         print("Shutdown imaging machine...")
@@ -124,7 +133,6 @@ class OpenStackBuilder(Builder):
             ip_addr = self.instance['addresses'][self.config['network']["name"]][0]['addr']
 
         print(f"Connecting to {ip_addr} using key {self.key.name}")
-
         for i in range(0, 15):
             try:
                 self.ssh_client = SSHClient(ip_addr, 22, self.config["user"], None,
@@ -189,7 +197,6 @@ def bake(CLIENT, image):  # pragma: no coverage
         printr("An image named '{}' already exists!!!".format(
             config_dict['name']))
         sys.exit(2)
-
     with OpenStackBuilder(CLIENT, config_dict) as builder:
         builder.launch()
         builder.wait_for_ssh()

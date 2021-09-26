@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 
 import colorama
@@ -10,8 +11,6 @@ def get_parser():  # pragma: no coverage
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("--no-color", action='store_true',
                         help="Disable colored output")
-
-    parser.add_argument("--openstack", action='store_true')
 
     subparsers = parser.add_subparsers(dest="cmd")
 
@@ -48,9 +47,14 @@ def get_client_opts():
 def main():
     options = get_client_opts()
 
-    if options.openstack:
-        from wolkenbrot.os import action
-        action(options)
-    else:
-        from wolkenbrot.aws import action
-        action(options)
+    with open(options.image, "r") as fd:
+        config_dict = json.load(fd)
+    try:
+        if config_dict['provider'] == 'openstack':
+            from wolkenbrot.os import action
+            action(options)
+        else:
+            from wolkenbrot.aws import action
+            action(options)
+    except KeyboardInterrupt:
+        pass
