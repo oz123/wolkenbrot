@@ -38,7 +38,17 @@ class OpenStackBuilder(Builder):
         self.sec_group = None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        self._shutdown_machine()
+        self._destroy_machine()
+        # TODO: add cleaning of security group
+
+    def _shutdown_machine(self):
+        print("Shutdown imaging machine...")
+        self.client.compute.stop_server(self.instance.id)
+
+    def _destroy_machine(self):
+        print("Destroy imaging machine...")
+        self.client.delete_server(self.instance.id, wait=True, timeout=360)
 
     def make_new_key(self):
         print("Creating keypair for imaging machine...")
