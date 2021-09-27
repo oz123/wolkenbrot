@@ -38,7 +38,7 @@ But here are some reasons that you might like it better than packer:
 You can run the following command to build an image:
 
 ```
-    $ wolkenbrot bake <image.json>
+ $ wolkenbrot bake <image.json>
 ```
 
 See the documentation for the JSON format.
@@ -46,19 +46,19 @@ See the documentation for the JSON format.
 You can run the following command to list your existing images:
 
 ```
-    $ wolkenbrot list
+$ wolkenbrot list
 ```
 
 You can view the information about and image:
 
 ```
-	 $  wolkenbrot info ami-72192e
+$  wolkenbrot info ami-72192e
 ```
 
 You can remove the image with:
 
 ```
-	 $ wolkenbrot delete ami-72192e
+$ wolkenbrot delete ami-72192e
 ```
 
 Wolkenbrot follows boto3 configuration principles, so if you wonder how to
@@ -71,29 +71,18 @@ pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
  * Do you support Windows or Mac OS X?
 
    The author of this software strongly despises working on Windows or
-	 Mac OS X. Hence, this software is not tested for these platforms.
-	 If you can run Python on your OS, it might run.
+   Mac OS X. Hence, this software is not tested for these platforms.
+   If you can run Python on your OS, it might run.
 
  * Do you support provisioning machines with Saltstack\Chef\Puppet\Ansible\XYZ?
 
-  Strictly speaking **Nope**. Alas, see the answer bellow.
-
- * How can I ,never the less, provision my machine with saltstack?
-
- One of the annoyances I have had with packer, is that it always provisions salt
- on the image builder before actually running my salt states.
- That is, by default, Packer only uses publicly available images as the starting point.
- If you plan to use salt, simply create an image which already contains salt installed,
- and add a single provisioning command `salt-call` after uploading your states to the destination machine
- If other systems are able to do something like that (I believe ansible can run playbooks locally too) then
- you can use any system you like.
-
-
+  Yes, just install them via shell first, then call the right binary with the correct playbook\state\formula..
+ 
 ### Testing and Installing the test requirements
 
 Simply issue:
 
 ```
-   $ pip install -e ".[dev]"
-	 $ make test
+$ pip install -e ".[dev]"
+$ make test
 ```
