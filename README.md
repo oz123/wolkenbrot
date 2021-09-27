@@ -7,7 +7,7 @@ wolkenbrot is named after a German children's title called Wolkenbrot by
 the Korean authors Baek Hee Na Kim Hyang Soo. The translation to English is
 cloud's bread.
 
-Wolken brot is inspired and packer[1] kujenga[2], removing fabric as a
+Wolken brot is inspired by packer[1] and kujenga[2], removing fabric as a
 dependency. It also aims to be more tested and documented.
 
 In case you wonder, yes it's similar to packer by Hashicorp.
