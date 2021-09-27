@@ -54,7 +54,8 @@ class OpenStackBuilder(Builder):
 
     def _shutdown_machine(self):
         print("Shutdown imaging machine...")
-        if self.client.get_server(self.instance.id).status != 'SHUTOFF':
+        instance = self.client.get_server(self.instance.id)
+        if instance and instance.status != 'SHUTOFF':
             self.client.compute.stop_server(self.instance.id)
 
     def _destroy_machine(self):
