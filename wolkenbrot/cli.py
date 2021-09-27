@@ -12,6 +12,8 @@ def get_parser():  # pragma: no coverage
     parser.add_argument("--no-color", action='store_true',
                         help="Disable colored output")
 
+    parser.add_argument("--openstack", action='store_true')
+
     subparsers = parser.add_subparsers(dest="cmd")
 
     baker = subparsers.add_parser("bake", description="Create an AMI image")
@@ -47,10 +49,11 @@ def get_client_opts():
 def main():
     options = get_client_opts()
 
-    with open(options.image, "r") as fd:
-        config_dict = json.load(fd)
+    if options.image:
+        with open(options.image, "r") as fd:
+            config_dict = json.load(fd)
     try:
-        if config_dict['provider'] == 'openstack':
+        if options.openstack or config_dict["provider"] == 'openstack':
             from wolkenbrot.os import action
             action(options)
         else:
