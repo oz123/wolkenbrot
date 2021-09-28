@@ -48,12 +48,13 @@ def get_client_opts():
 
 def main():
     options = get_client_opts()
+    config_dict = {}
 
-    if options.image:
+    if hasattr(options, 'image'):
         with open(options.image, "r") as fd:
             config_dict = json.load(fd)
     try:
-        if options.openstack or config_dict["provider"] == 'openstack':
+        if hasattr(options, 'openstack') and config_dict.get("provider") == 'openstack':
             from wolkenbrot.os import action
             action(options)
         else:
