@@ -139,6 +139,7 @@ class AWSBuilder(Builder):
             try:
                 self.ssh_client = SSHClient(ip_addr, 22, self.config["user"], None,
                                    self.key.key_material, None)
+                return
             except paramiko.ssh_exception.PasswordRequiredException as excep:
                 raise excep
             except (NoValidConnectionsError, TimeoutError,
@@ -148,7 +149,6 @@ class AWSBuilder(Builder):
                 time.sleep(4)
 
         raise ValueError('Could not connect to the machine via SSH.')
-        time.sleep(60)
 
     @timeout(1200, "Copying files took too long ...")
     def copy_files(self):
