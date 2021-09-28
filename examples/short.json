@@ -6,8 +6,8 @@
 "region": "us-east-1",
 "instance_type": "t2.micro",
 "base_image": {
-    "doc-string": "These are the U16.04 amd64 ebs images as of 3-Aug-2017",
-    "us-east-1": "ami-b391b9c8"
+    "doc-string": "AMI for Ubuntu 20.04 in us-east-1",
+    "us-east-1": "ami-089b5711e63812c2a"
 },
 "tags": [{"owner": "oznt"}, {"project": "my project"}],
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
