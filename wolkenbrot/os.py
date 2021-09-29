@@ -211,9 +211,10 @@ def list_details(CLIENT, image_id):
             pprint(value)
 
 
-def delete_image(CLIENT, image_id):
-    printr("Deleting ...")
-    CLIENT.image.delete_image(image_id, ignore_missing=True)
+def delete_image(CLIENT, image_name):
+    printr(f"Deleting {image_name} ...")
+    img_id = CLIENT.image.find_image(image_name)
+    CLIENT.image.delete_image(img_id, ignore_missing=True)
 
 
 def validate_image_name(CLIENT, name):
