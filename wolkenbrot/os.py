@@ -193,11 +193,14 @@ class OpenStackBuilder(Builder):
             volume=self.instance.volumes[0].id
         )
 
+        tags = self.config.get("tags", {})
+        if tags:
+            self.client.update_image_properties(image, name=image.name, **tags)
 
 def list_images(CLIENT):
     for image in CLIENT.list_images():
         print("{id}\t{name:20}\t\t{created}".format(**image))
-    
+
 
 def list_details(CLIENT, image_id):
     image = CLIENT.image.find_image("00fe5e3a-7c97-4071-be12-6ce7d1a5ecf5")
@@ -231,7 +234,6 @@ def bake(CLIENT, image):  # pragma: no coverage
         config_dict = json.load(fd)
 
     check_config(config_dict)
-
     if validate_image_name(CLIENT, config_dict['name']):
         printr("An image named '{}' already exists!!!".format(
             config_dict['name']))
