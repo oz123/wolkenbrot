@@ -76,18 +76,14 @@ pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
 
  * Do you support provisioning machines with Saltstack\Chef\Puppet\Ansible\XYZ?
 
-  Strictly speaking **Nope**. Alas, see the answer bellow.
+  Yes, just install them via shell first, then call the right binary with the correct playbook\state\formula..
+ 
 
- * How can I ,never the less, provision my machine with saltstack?
+ * How can you define hierarchies and templates?
 
- One of the annoyances I have had with packer, is that it always provisions salt
- on the image builder before actually running my salt states.
- That is, by default, Packer only uses publicly available images as the starting point.
- If you plan to use salt, simply create an image which already contains salt installed,
- and add a single provisioning command `salt-call` after uploading your states to the destination machine
- If other systems are able to do something like that (I believe ansible can run playbooks locally too) then
- you can use any system you like.
-
+   Wolkenbrot does not have base images or template. Instead you can define templates with place holders,
+   and use jq or a template engine to create hierarchies.
+   See examples/template/
 
 ### Testing and Installing the test requirements
 
