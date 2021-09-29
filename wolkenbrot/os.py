@@ -50,7 +50,9 @@ class OpenStackBuilder(Builder):
         if self.key:
             print(f"Deleting keypair {self.key.name}...")
             self.client.delete_keypair(self.key.id)
-        # TODO: add clean volume
+        if self.instance.volumes:
+            print(f"Deleting volume {self.instance.volumes[0].id}")
+            self.client.delete_volume(self.instance.volumes[0].id)
 
     def _shutdown_machine(self):
         print("Shutdown imaging machine...")
