@@ -1,13 +1,17 @@
 {
-"name": "short_",
-"provider": "aws",
+"name": "wolken-image-openstack",
+"provider": "openstack",
 "description": "Short example for testing.",
 "user": "ubuntu",
-"region": "us-east-1",
-"instance_type": "t2.micro",
+"cloud": "devops",
+"network": {
+    "name": "kiosk-net",
+	"floating-ip": "true"
+    },
+"instance_type": "ECS.GP1.2-8",
 "base_image": {
-    "doc-string": "These are the U16.04 amd64 ebs images as of 3-Aug-2017",
-    "us-east-1": "ami-b391b9c8"
+    "doc-string": "This is the base image as of 17-Mar-2021",
+    "name": "ubuntu-focal-cloud-2021-09-24"
 },
 "tags": [{"owner": "oznt"}, {"project": "my project"}],
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
