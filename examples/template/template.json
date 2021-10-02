@@ -1,0 +1,40 @@
+{
+  "name": "kiosk-image-2021-09-29",
+  "provider": "openstack",
+  "description": "Short example for testing.",
+  "user": "ubuntu",
+  "cloud": "devops",
+  "network": {
+    "name": "kiosk-net",
+    "floating-ip": "true"
+  },
+  "instance_type": "ECS.GP1.2-8",
+  "base_image": {
+    "doc-string": "This is the base image as of 17-Mar-2021",
+    "name": "ubuntu-focal-cloud-2021-09-24"
+  },
+  "tags": [
+    {
+      "owner": "oznt"
+    },
+    {
+      "project": "my project"
+    }
+  ],
+  "uploads": {
+    "scripts/00_fetch_all.sh": "/tmp/00_fetch_all.sh",
+    "scripts/01_install_kubeadm.sh": "/tmp/01_install_kubeand.sh",
+    "scripts/fetch_calico.sh": "/tmp/fetch_calico.sh",
+    "scripts/fetch_plugin_images.sh": "/tmp/fetch_plugin_images.sh",
+    "sccripts/versions.sh": "/tmp/version.sh"
+  },
+  "commands": [
+    "sudo apt update",
+    "sudo apt-get install --allow-remove-essential -y grub-pc 'grub-efi*-'",
+    "sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade",
+    "sudo bash /tmp/00_fetch_all.sh",
+    "sudo bash /tmp/01_install_kubeamd.sh",
+    "sudo bash /tmp/fetch_calico.sh",
+    "sudo bash /tmp/fetch_plugin_images.sh"
+  ]
+}

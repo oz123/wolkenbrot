@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 
 import colorama
@@ -47,10 +48,17 @@ def get_client_opts():
 
 def main():
     options = get_client_opts()
+    config_dict = {}
 
-    if options.openstack:
-        from wolkenbrot.os import action
-        action(options)
-    else:
-        from wolkenbrot.aws import action
-        action(options)
+    if hasattr(options, 'image'):
+        with open(options.image, "r") as fd:
+            config_dict = json.load(fd)
+    try:
+        if options.openstack or config_dict.get("provider") == 'openstack':
+            from wolkenbrot.os import action
+            action(options)
+        else:
+            from wolkenbrot.aws import action
+            action(options)
+    except KeyboardInterrupt:
+        pass

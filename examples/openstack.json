@@ -16,6 +16,6 @@
 "tags": [{"owner": "oznt"}, {"project": "my project"}],
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
 	    "examples/upload/bar.txt": "/tmp/upload/bar.txt"},
-"commands": [ "sudo apt-get update",
+"commands": [ "sudo apt-get update", "sudo apt-get install --allow-remove-essential -y grub-pc 'grub-efi*-'",
               "sudo DEBIAN_FRONTEND=noninteractive apt-get -y upgrade"]
 }

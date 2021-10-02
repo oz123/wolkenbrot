@@ -133,13 +133,13 @@ class AWSBuilder(Builder):
         printy("The instance is now running ...")
         # The instance is running, but we give it 60 more seconds for running
         # SSHD
-        ip_addr = self.instance.public_ip_address,
+        ip_addr = self.instance.public_ip_address
         print(f"Connecting to {ip_addr} using key {self.key.name}")
-
         for i in range(0, 15):
             try:
                 self.ssh_client = SSHClient(ip_addr, 22, self.config["user"], None,
-                                   self.key.private_key, None)
+                                   self.key.key_material, None)
+                return
             except paramiko.ssh_exception.PasswordRequiredException as excep:
                 raise excep
             except (NoValidConnectionsError, TimeoutError,
@@ -149,7 +149,6 @@ class AWSBuilder(Builder):
                 time.sleep(4)
 
         raise ValueError('Could not connect to the machine via SSH.')
-        time.sleep(60)
 
     @timeout(1200, "Copying files took too long ...")
     def copy_files(self):
