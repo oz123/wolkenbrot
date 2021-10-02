@@ -7,10 +7,10 @@ wolkenbrot is named after a German children's title called Wolkenbrot by
 the Korean authors Baek Hee Na Kim Hyang Soo. The translation to English is
 cloud's bread.
 
-Wolken brot is inspired and packer[1] kujenga[2], removing fabric as a
+Wolken brot is inspired by packer[1] and kujenga[2], removing fabric as a
 dependency. It also aims to be more tested and documented.
 
-In case you woder, yes it's similar to packer by Hashicorp.
+In case you wonder, yes it's similar to packer by Hashicorp.
 But here are some reasons that you might like it better than packer:
 
 1. It's written in Python.
@@ -38,7 +38,7 @@ But here are some reasons that you might like it better than packer:
 You can run the following command to build an image:
 
 ```
-    $ wolkenbrot bake <image.json>
+ $ wolkenbrot bake <image.json>
 ```
 
 See the documentation for the JSON format.
@@ -46,19 +46,19 @@ See the documentation for the JSON format.
 You can run the following command to list your existing images:
 
 ```
-    $ wolkenbrot list
+$ wolkenbrot list
 ```
 
 You can view the information about and image:
 
 ```
-	 $  wolkenbrot info ami-72192e
+$  wolkenbrot info ami-72192e
 ```
 
 You can remove the image with:
 
 ```
-	 $ wolkenbrot delete ami-72192e
+$ wolkenbrot delete ami-72192e
 ```
 
 Wolkenbrot follows boto3 configuration principles, so if you wonder how to
@@ -71,25 +71,18 @@ pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
  * Do you support Windows or Mac OS X?
 
    The author of this software strongly despises working on Windows or
-	 Mac OS X. Hence, this software is not tested for these platforms.
-	 If you can run Python on your OS, it might run.
+   Mac OS X. Hence, this software is not tested for these platforms.
+   If you can run Python on your OS, it might run.
 
  * Do you support provisioning machines with Saltstack\Chef\Puppet\Ansible\XYZ?
 
   Yes, just install them via shell first, then call the right binary with the correct playbook\state\formula..
  
-
- * How can you define hierarchies and templates?
-
-   Wolkenbrot does not have base images or template. Instead you can define templates with place holders,
-   and use jq or a template engine to create hierarchies.
-   See examples/template/
-
 ### Testing and Installing the test requirements
 
 Simply issue:
 
 ```
-   $ pip install -e ".[dev]"
-	 $ make test
+$ pip install -e ".[dev]"
+$ make test
 ```
