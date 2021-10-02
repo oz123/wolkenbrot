@@ -193,9 +193,11 @@ class OpenStackBuilder(Builder):
             volume=self.instance.volumes[0].id
         )
 
-        tags = self.config.get("tags", {})
+        tags = self.config.get("tags", None)
         if tags:
-            self.client.update_image_properties(image, name=image.name, **tags)
+            all_values = {}
+            [all_values.update(tag) for tag in tags]
+            self.client.update_image_properties(image, name=image.name, **all_values)
 
 def list_images(CLIENT):
     for image in CLIENT.list_images():
