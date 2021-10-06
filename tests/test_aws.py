@@ -6,12 +6,13 @@ import pytest
 from moto import mock_ec2
 
 from wolkenbrot.util import check_config, BadConfigFile
-from wolkenbrot import Builder, delete_image
+from wolkenbrot.aws import AWSBuilder, delete_image
 
 
 valid = {
     "name": "short",
     "description": "Short example for testing.",
+    "provider": "aws",
     "user": "ubuntu",
     "region": "us-west-2",
     "instance_type": "m3.medium",
@@ -73,14 +74,14 @@ def test_invalid_config():
 def test_builder_key():
     with mock_ec2():
         ec2 = boto3.resource('ec2', region_name='us-east-1')
-        with Builder(ec2, valid) as builder:
+        with AWSBuilder(ec2, valid) as builder:
             assert builder.key is not None
 
 
 def test_sec_group():
     with mock_ec2():
         ec2 = boto3.resource('ec2', region_name='us-east-1')
-        with Builder(ec2, valid) as builder:
+        with AWSBuilder(ec2, valid) as builder:
             assert hasattr(builder, 'sec_grp')
 
 
@@ -88,13 +89,13 @@ def test_sec_group():
 def test_create_image():
     ec2 = boto3.resource('ec2', region_name='us-east-1')
 
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         builder.create_image()
 
         assert builder.image.state == 'available'
 
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         builder.create_image()
 
@@ -104,7 +105,7 @@ def test_create_image():
     valid_config_with_tags['tags'] = [{"owner": "oznt"},
                                       {"project": "my project"}]
 
-    with Builder(ec2, valid_config_with_tags) as builder:
+    with AWSBuilder(ec2, valid_config_with_tags) as builder:
         builder.launch()
         builder.create_image()
 
@@ -116,7 +117,7 @@ def test_create_image():
 def test_create_image_failed():
     ec2 = boto3.resource('ec2', region_name='us-east-1')
 
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.image = Mock()
         builder.image.state = 'unknown'
 
@@ -129,7 +130,7 @@ def test_delete_image():
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     image_id = None
 
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         builder.create_image()
         image_id = builder.image._id
@@ -143,7 +144,7 @@ def test_delete_image():
 def test_wait_for_status_running():
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     with patch('time.sleep', return_value=None):
-        with Builder(ec2, valid) as builder:
+        with AWSBuilder(ec2, valid) as builder:
             builder.launch()
             original_instance = builder.instance
             builder.instance = Mock()
@@ -154,34 +155,34 @@ def test_wait_for_status_running():
                 builder.instance = original_instance
 
 
+@patch('paramiko.SSHClient')
 @mock_ec2
-def test_wait_for_ssh():
+def test_wait_for_ssh(t):
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     with patch('time.sleep', return_value=None) as t:
-        with Builder(ec2, valid) as builder:
+        with AWSBuilder(ec2, valid) as builder:
             builder.launch()
             original_instance = builder.instance
             builder.instance = Mock()
-
+            builder.instance.public_ip_address = '182.32.12.42'
             with MockDict(builder.instance.state, values=(("Code", 0), ("Code", 16))) as mock_state:  # noqa
                 builder.instance.state = mock_state
                 builder.wait_for_ssh()
                 assert builder.instance.reload.called
                 builder.instance = original_instance
 
-            # validate that we wait for ssh to start
-            assert t.call_args[0][0] == 60
 
-
+@patch('paramiko.SSHClient')
 @patch('time.sleep', return_value=None)
 @mock_ec2
-def test_configure(t):
+def test_configure(t, p):
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     values = (("Code", 0), ("Code", 16), ("Code", 16), ("Code", 16))
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         original_instance = builder.instance
         builder.instance = Mock()
+        builder.instance.public_ip_address = '182.32.12.42'
         with MockDict(builder.instance.state, values=values) as mock_state:  # noqa
             builder.instance.state = mock_state
             builder.wait_for_ssh()
@@ -195,15 +196,16 @@ def test_configure(t):
 
 
 @patch('time.sleep', return_value=None)
-@patch('paramiko.SSHClient', return_value=None)
+@patch('paramiko.SSHClient')
 @mock_ec2
 def test_configure_failed(t, p):
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     values = (("Code", 0), ("Code", 16), ("Code", 16), ("Code", 16))
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         original_instance = builder.instance
         builder.instance = Mock()
+        builder.instance.public_ip_address = '182.32.12.42'
         with MockDict(builder.instance.state, values=values) as mock_state:  # noqa
             builder.instance.state = mock_state
             builder.ssh_client = Mock()
@@ -223,10 +225,11 @@ def test_configure_failed(t, p):
 def test_upload(t, p, r):
     ec2 = boto3.resource('ec2', region_name='us-east-1')
     values = (("Code", 0), ("Code", 16), ("Code", 16), ("Code", 16))
-    with Builder(ec2, valid) as builder:
+    with AWSBuilder(ec2, valid) as builder:
         builder.launch()
         original_instance = builder.instance
         builder.instance = Mock()
+        builder.instance.public_ip_address = '182.32.12.42'
         with MockDict(builder.instance.state, values=values) as mock_state:  # noqa
             builder.instance.state = mock_state
             builder.wait_for_ssh()
