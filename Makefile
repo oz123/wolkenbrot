@@ -1,8 +1,6 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
 
-PY ?= python3
-
 help:
 	@mh -f $(MAKEFILE_LIST) $(target) || echo "Please install mh from github/oz123/mh"
 ifndef target
