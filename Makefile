@@ -31,10 +31,10 @@ clean-test: ## remove test and coverage artifacts
 
 test: OPTS = --pdb
 test: ## run tests quickly with the default Python
-	py.test $(OPTS) -x -vv
+	pytest $(OPTS) -x -vv
 
 coverage: ## check code coverage quickly with the default Python
-	py.test -x -vv --cov --cov-report html --cov-config .coveragerc tests/
+	pytest -x -vv --cov --cov-report html --cov-config .coveragerc tests/
 
 	#$(BROWSER) htmlcov/index.html
 
