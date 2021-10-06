@@ -86,6 +86,7 @@ class SSHClient:  # pragma: no coverage
     TIMEOUT = 3600
 
     def __init__(self, host, port, username, password, key=None, passphrase=None):  # noqa
+
         self.username = username
         self.password = password
         self.client = paramiko.SSHClient()
