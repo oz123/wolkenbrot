@@ -56,15 +56,6 @@ docs: ## generate Sphinx HTML documentation, including API docs
 dev: clean
 	pip3 install --only-binary :all: -e .
 
-build-exec: ## build a single file executable of wolkenbrot 
-	pip3 install .
-	pyinstaller wolkenbrot.spec
-
-
-build-exec-in-docker:  ## build an executable with pyinstaller
-	docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:$(TAG) bash -c "make install build-exec PY=$(PY)"
-
-
 install: clean
 	pip3 install --only-binary :all: .
 
@@ -76,8 +67,4 @@ build-exec-in-docker:  ## build an executable with pyinstaller
 	#docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash -c "make install build-exec PY=$(PY)"
 	docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash
 
-build-sdist: clean
-	$(PY) setup.py sdist
 
-pypi-release:
-	twine upload sdist/wolkenbrot.tar.gz
