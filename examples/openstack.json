@@ -13,7 +13,7 @@
     "doc-string": "This is the base image as of 17-Mar-2021",
     "name": "ubuntu-focal-cloud-2021-09-24"
 },
-"tags": [{"owner": "oznt"}, {"project": "my project"}],
+"tags": [{"foo": "bar"}, {"software-version": "0.1"}],
 "uploads": {"examples/upload/foo.txt": "/tmp/upload/foo.txt",
 	    "examples/upload/bar.txt": "/tmp/upload/bar.txt"},
 "commands": [ "sudo apt-get update", "sudo apt-get install --allow-remove-essential -y grub-pc 'grub-efi*-'",
