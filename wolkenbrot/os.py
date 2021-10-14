@@ -197,7 +197,7 @@ class OpenStackBuilder(Builder):
         if tags:
             all_values = {}
             [all_values.update(tag) for tag in tags]
-            self.client.update_image_properties(image, name=image.name, **all_values)
+            self.client.update_image_properties(name_or_id=image.id, **all_values)
 
 def list_images(CLIENT):
     for image in CLIENT.list_images():
