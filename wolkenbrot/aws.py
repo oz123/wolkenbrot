@@ -44,9 +44,11 @@ class AWSBuilder(Builder):
         self.key.delete()
         if self.instance:
             self.instance.terminate()
-            # wait for the machine to terminate
-            self.wait_for_status(48)
+        else:
+            self._locate_renegade_instance()
 
+        # wait for the machine to terminate
+        self.wait_for_status(48)
         self.sec_grp.delete()
         os.remove(self.key.name + ".pem")
         printy("Builder teardown complete")
@@ -76,6 +78,18 @@ class AWSBuilder(Builder):
                             }])
 
         return sec_group.group_name, sec_group.id, sec_group
+
+    def _locate_renegade_instance(self):
+        """
+        If an exception happends too early, it could be that an
+        instance is created in AWS but never gets
+        assigned to ``self.instnace``.
+        """
+        inst = [i for i in self.ec2.instances.filter(
+                    Filters=[{'Name':'key-name', 'Values': [self.key.name]}])][-1]
+
+        inst.terminate()
+        self.instance = inst
 
     @timeout(600, "launch instance timed out!")
     def launch(self):
