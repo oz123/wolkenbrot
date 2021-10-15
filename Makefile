@@ -1,6 +1,8 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
 
+PY ?= python3
+
 help:
 	@mh -f $(MAKEFILE_LIST) $(target) || echo "Please install mh from github/oz123/mh"
 ifndef target
@@ -52,8 +54,17 @@ docs: ## generate Sphinx HTML documentation, including API docs
 
 
 dev: clean
-	pip install -e .
-
+	pip3 install --only-binary :all: -e .
 
 install: clean
-	pip install .
+	pip3 install --only-binary :all: .
+
+build-exec: ## build a single file executable of wolkenbrot 
+	pip3 install --only-binary :all: .
+	pyinstaller wolkenbrot.spec
+
+build-exec-in-docker:  ## build an executable with pyinstaller
+	#docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash -c "make install build-exec PY=$(PY)"
+	docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash
+
+
