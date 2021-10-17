@@ -1,6 +1,6 @@
 # Wolkenbrot
 
-## bakes and manages your AWS cloud images
+## bakes and manages your cloud images (AWS and OpenStack)
 ![demo](https://github.com/oz123/wolkenbrot/blob/master/docs/demo.gif?raw=true)
 
 wolkenbrot is named after a German children's title called Wolkenbrot by
