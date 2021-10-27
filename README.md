@@ -30,8 +30,9 @@ But here are some reasons that you might like it better than packer:
 6. It adds the ability to get detailed information about an image from the CLI.
 7. It adds the ability to de-register images from the CLI.
 
-[1]: https://github.com/macd/kujenga
-[2]: https://www.packer.io/
+[1]: https://www.packer.io/
+[2]: https://github.com/macd/kujenga
+
 
 ### USAGE
 
@@ -62,7 +63,7 @@ $ wolkenbrot delete ami-72192e
 ```
 
 Wolkenbrot follows boto3 configuration principles, so if you wonder how to
-pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
+pass AWS configuration parameters, take a look in [Boto3's own documentation][3]
 
 [3]: http://boto3.readthedocs.io/en/latest/guide/configuration.html
 
