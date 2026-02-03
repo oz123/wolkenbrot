@@ -10,7 +10,6 @@ name = "pypi"
 paramiko = "*"
 colorama = "*"
 openstacksdk = ">=0.59"
-cryptography = "==3.3.2"
-
-[requires]
-python_version = "3.7"
+cryptography = "39.0.1"
+libvirt-python = "*"
+pycdlib = "*"

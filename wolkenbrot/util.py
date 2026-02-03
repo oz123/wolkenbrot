@@ -142,9 +142,37 @@ class SSHClient:  # pragma: no coverage
         if not self.sftp:
             self.sftp = self.transport.open_sftp_client()
 
-        try:
-            self.sftp.mkdir(os.path.dirname(dest))
-        except OSError:
-            pass
+        if os.path.isdir(src):
+            self._copy_dir(src, dest)
+        else:
+            self._mkdir_p(os.path.dirname(dest))
+            self.sftp.put(src, dest)
 
-        self.sftp.put(src, dest)
+    def _mkdir_p(self, remote_dir):
+        """Create remote directory and parents if needed."""
+        if not remote_dir or remote_dir == "/":
+            return
+        dirs = []
+        while remote_dir:
+            try:
+                self.sftp.stat(remote_dir)
+                break
+            except IOError:
+                dirs.append(remote_dir)
+                remote_dir = os.path.dirname(remote_dir)
+        for d in reversed(dirs):
+            try:
+                self.sftp.mkdir(d)
+            except OSError:
+                pass
+
+    def _copy_dir(self, local_dir, remote_dir):
+        """Recursively copy a local directory to remote."""
+        self._mkdir_p(remote_dir)
+        for item in os.listdir(local_dir):
+            local_path = os.path.join(local_dir, item)
+            remote_path = os.path.join(remote_dir, item)
+            if os.path.isdir(local_path):
+                self._copy_dir(local_path, remote_path)
+            else:
+                self.sftp.put(local_path, remote_path)

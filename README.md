@@ -1,6 +1,6 @@
 # Wolkenbrot
 
-## bakes and manages your AWS cloud images
+## bakes and manages your cloud images (AWS, OpenStack, libvirt/KVM)
 ![demo](https://github.com/oz123/wolkenbrot/blob/master/docs/demo.gif?raw=true)
 
 wolkenbrot is named after a German children's title called Wolkenbrot by
@@ -33,7 +33,7 @@ But here are some reasons that you might like it better than packer:
 [1]: https://github.com/macd/kujenga
 [2]: https://www.packer.io/
 
-### USAGE
+### AWS Usage (default)
 
 You can run the following command to build an image:
 
@@ -65,6 +65,122 @@ Wolkenbrot follows boto3 configuration principles, so if you wonder how to
 pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
 
 [3]: http://boto3.readthedocs.io/en/latest/guide/configuration.html
+
+### OpenStack Usage
+
+Use the `--openstack` flag or set `"provider": "openstack"` in your JSON config:
+
+```
+$ wolkenbrot --openstack bake <image.json>
+$ wolkenbrot --openstack list
+$ wolkenbrot --openstack info <image-id>
+$ wolkenbrot --openstack delete <image-id>
+```
+
+### Libvirt/KVM Usage
+
+Use the `--libvirt` flag or set `"provider": "libvirt"` in your JSON config:
+
+```
+$ wolkenbrot --libvirt bake <image.json>
+$ wolkenbrot --libvirt list
+$ wolkenbrot --libvirt info <image-name.qcow2>
+$ wolkenbrot --libvirt delete <image-name.qcow2>
+```
+
+#### Libvirt-specific options
+
+- `--uri` - Libvirt connection URI (default: `qemu:///system`)
+- `--image-dir` - Directory for libvirt images (default: `/var/lib/libvirt/images`)
+
+Examples:
+
+```
+# List images in a custom directory
+$ wolkenbrot --libvirt --image-dir /custom/path list
+
+# Connect to a remote libvirt host
+$ wolkenbrot --libvirt --uri qemu+ssh://user@host/system list
+```
+
+#### Libvirt JSON configuration
+
+Example `libvirt.json`:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "description": "My custom image",
+  "base_image": {
+    "path": "/var/lib/libvirt/images/ubuntu-cloud.img"
+  },
+  "output_path": "./my-image.qcow2",
+  "user": "ubuntu",
+  "memory": 4096,
+  "vcpus": 2,
+  "disk_size": "20G",
+  "network": "default",
+  "uploads": {
+    "./local-file": "/remote/path"
+  },
+  "commands": [
+    "sudo apt-get update",
+    "sudo apt-get install -y nginx"
+  ]
+}
+```
+
+Libvirt-specific configuration options:
+- `region` - Libvirt connection URI (default: `qemu:///system`)
+- `base_image.path` - Path to the base cloud image (qcow2 format)
+- `output_path` - Where to save the final image
+- `instance_type` - Predefined instance type (see table below)
+- `memory` - VM memory in MB (default: 2048, overrides instance_type)
+- `vcpus` - Number of virtual CPUs (default: 2, overrides instance_type)
+- `disk_size` - Disk size (default: "20G", overrides instance_type)
+- `network` - Libvirt network name (default: "default")
+
+#### Instance Types
+
+| Type   | vCPUs | Memory | Disk |
+|--------|-------|--------|------|
+| small  | 1     | 1 GB   | 10G  |
+| medium | 2     | 4 GB   | 20G  |
+| large  | 4     | 8 GB   | 40G  |
+| xlarge | 8     | 16 GB  | 80G  |
+
+You can use `instance_type` instead of specifying `memory`, `vcpus`, and `disk_size` individually:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "base_image": {"path": "/var/lib/libvirt/images/ubuntu.img"},
+  "instance_type": "medium"
+}
+```
+
+Individual settings (`memory`, `vcpus`, `disk_size`) override the instance type defaults if both are specified.
+
+#### Remote Libvirt Hosts
+
+Use `region` in the config (or `--uri` CLI option) to connect to remote libvirt hosts:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "region": "qemu+ssh://user@remote-host/system",
+  "base_image": {"path": "/var/lib/libvirt/images/ubuntu.img"},
+  "instance_type": "large"
+}
+```
+
+Common URI formats:
+- `qemu:///system` - Local system (default, requires root or libvirt group)
+- `qemu:///session` - Local user session (unprivileged)
+- `qemu+ssh://user@host/system` - Remote host via SSH
 
 ### FAQ
 
