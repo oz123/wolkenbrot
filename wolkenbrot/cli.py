@@ -27,7 +27,14 @@ def get_parser():  # pragma: no coverage
     parser.add_argument("--no-color", action='store_true',
                         help="Disable colored output")
 
-    parser.add_argument("--openstack", action='store_true')
+    parser.add_argument("--openstack", action='store_true',
+                        help="Use OpenStack provider")
+    parser.add_argument("--libvirt", action='store_true',
+                        help="Use libvirt/KVM provider")
+    parser.add_argument("--uri", type=str, default="qemu:///system",
+                        help="Libvirt connection URI (default: qemu:///system)")
+    parser.add_argument("--image-dir", type=str, default="/var/lib/libvirt/images",
+                        help="Directory for libvirt images (default: /var/lib/libvirt/images)")
 
     subparsers = parser.add_subparsers(dest="cmd")
 
@@ -69,7 +76,10 @@ def main():
         with open(options.image, "r") as fd:
             config_dict = json.load(fd)
     try:
-        if options.openstack or config_dict.get("provider") == 'openstack':
+        if options.libvirt or config_dict.get("provider") == 'libvirt':
+            from wolkenbrot.libvirt import action
+            action(options)
+        elif options.openstack or config_dict.get("provider") == 'openstack':
             from wolkenbrot.os import action
             action(options)
         else:

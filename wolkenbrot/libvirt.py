@@ -386,6 +386,20 @@ def delete_image(image_path):
     os.remove(image_path)
 
 
+def info_image(image_path):
+    """Show info about an image."""
+    if not os.path.exists(image_path):
+        printr(f"Image not found: {image_path}")
+        sys.exit(1)
+
+    result = subprocess.run(
+        ["qemu-img", "info", image_path],
+        capture_output=True,
+        text=True,
+    )
+    print(result.stdout)
+
+
 def bake(image_config):
     """Bake an image from config."""
     with open(image_config, "r") as fd:
@@ -409,10 +423,21 @@ def bake(image_config):
 
 def action(options):
     if options.cmd == "list":
-        list_images()
+        list_images(options.image_dir)
+
+    if options.cmd == "info":
+        image_path = options.imageId
+        # If not a full path, look in image_dir
+        if not os.path.isabs(image_path):
+            image_path = os.path.join(options.image_dir, image_path)
+        info_image(image_path)
 
     if options.cmd == "delete":
-        delete_image(options.image_path)
+        image_path = options.imageId
+        # If not a full path, look in image_dir
+        if not os.path.isabs(image_path):
+            image_path = os.path.join(options.image_dir, image_path)
+        delete_image(image_path)
 
     if options.cmd == "bake":
         bake(options.image)

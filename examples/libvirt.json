@@ -1,0 +1,21 @@
+{
+  "name": "k8s-node-base",
+  "description": "Kubernetes node base image",
+  "base_image": {
+    "path": "/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img"
+  },
+  "output_path": "./k8s-node-base.qcow2",
+  "user": "ubuntu",
+  "memory": 4096,
+  "vcpus": 2,
+  "disk_size": "20G",
+  "network": "default",
+  "uploads": {
+    "./k8s-images/": "/opt/k8s-images/"
+  },
+  "commands": [
+    "sudo apt-get update",
+    "sudo apt-get install -y containerd.io kubelet kubeadm kubectl",
+    "sudo kubeadm config images pull"
+  ]
+}

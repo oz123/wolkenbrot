@@ -1,6 +1,6 @@
 # Wolkenbrot
 
-## bakes and manages your AWS cloud images
+## bakes and manages your cloud images (AWS, OpenStack, libvirt/KVM)
 ![demo](https://github.com/oz123/wolkenbrot/blob/master/docs/demo.gif?raw=true)
 
 wolkenbrot is named after a German children's title called Wolkenbrot by
@@ -33,7 +33,7 @@ But here are some reasons that you might like it better than packer:
 [1]: https://github.com/macd/kujenga
 [2]: https://www.packer.io/
 
-### USAGE
+### AWS Usage (default)
 
 You can run the following command to build an image:
 
@@ -65,6 +65,79 @@ Wolkenbrot follows boto3 configuration principles, so if you wonder how to
 pass AWS configuration parameters, take a look in [Boto3's own documentation][2]
 
 [3]: http://boto3.readthedocs.io/en/latest/guide/configuration.html
+
+### OpenStack Usage
+
+Use the `--openstack` flag or set `"provider": "openstack"` in your JSON config:
+
+```
+$ wolkenbrot --openstack bake <image.json>
+$ wolkenbrot --openstack list
+$ wolkenbrot --openstack info <image-id>
+$ wolkenbrot --openstack delete <image-id>
+```
+
+### Libvirt/KVM Usage
+
+Use the `--libvirt` flag or set `"provider": "libvirt"` in your JSON config:
+
+```
+$ wolkenbrot --libvirt bake <image.json>
+$ wolkenbrot --libvirt list
+$ wolkenbrot --libvirt info <image-name.qcow2>
+$ wolkenbrot --libvirt delete <image-name.qcow2>
+```
+
+#### Libvirt-specific options
+
+- `--uri` - Libvirt connection URI (default: `qemu:///system`)
+- `--image-dir` - Directory for libvirt images (default: `/var/lib/libvirt/images`)
+
+Examples:
+
+```
+# List images in a custom directory
+$ wolkenbrot --libvirt --image-dir /custom/path list
+
+# Connect to a remote libvirt host
+$ wolkenbrot --libvirt --uri qemu+ssh://user@host/system list
+```
+
+#### Libvirt JSON configuration
+
+Example `libvirt.json`:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "description": "My custom image",
+  "base_image": {
+    "path": "/var/lib/libvirt/images/ubuntu-cloud.img"
+  },
+  "output_path": "./my-image.qcow2",
+  "user": "ubuntu",
+  "memory": 4096,
+  "vcpus": 2,
+  "disk_size": "20G",
+  "network": "default",
+  "uploads": {
+    "./local-file": "/remote/path"
+  },
+  "commands": [
+    "sudo apt-get update",
+    "sudo apt-get install -y nginx"
+  ]
+}
+```
+
+Libvirt-specific configuration options:
+- `base_image.path` - Path to the base cloud image (qcow2 format)
+- `output_path` - Where to save the final image
+- `memory` - VM memory in MB (default: 2048)
+- `vcpus` - Number of virtual CPUs (default: 2)
+- `disk_size` - Disk size (default: "20G")
+- `network` - Libvirt network name (default: "default")
 
 ### FAQ
 
