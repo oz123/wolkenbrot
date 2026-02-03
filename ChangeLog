@@ -1,9 +1,88 @@
 CHANGES
 =======
 
+* feat: support uploading to a directory
+* fix: multiple bug fixes for libvirtd
+* chore: update dependencies
+* feat: support uploading directories
+* Add libvirt backend and cli
+* chore: update requirements.txt
+* chore: update dependencies
+
+v0.3
+----
+
+* Add tasks to build sdist and upload to pypi
+* Add license header to all files
+* AWS: Handle deletion of resources on exceptions
+* Openstack: fix example
+* Add spec for pyinstaller
+* Continue working on executable creation
+* Build executable with pyinstaller
+* AWS: Fix all tests
+* Makefile: py.test -> pytest
+* Integrate mh in the makefile
+* Add requirements.txt
+* Openstack: Properly tag image
+* Openstack: add tags to the image
+* Openstack: clean volume when finished
+* CLI: fix logic of OS vs. AWS
+* Openstack: fix image delete
+* Docs: show how to use templates
+* AWS: Wait for SSH return if client obained
+* CLI: fix undefined references
+* AWS: fix tiny bugs introduced by refactoring
+* AWS: Update example with updated AMI
+* update openstack example
+* Update ChangeLog
+* Update README.md
+* Update README.md
+* Update README.md
+* Handle deletion error
+* Allow passing --openstack
+* Openstack: successfully build image
+* Openstack: Clean KeyPair after exit
+* Create SSH client at wait for SSH
+* Openstack delete security group when exiting
+* Clean up builder machine at program exit
+* Got SSH and following steps working on OS
+* Add floating IP address if desired
+* Fix: launching wait for SSH in openstack
+* Simplify validate\_image\_function
+* Fix launching of machine in openstack
+* Fix logic of security groups creation
+* Remove unused import
+* Sort imports remove unused imports
+* Update example config
+* Add openstacksdk to the dependencies
+* Tiny OS fixes
+* Add bake functionality for openstack
+* Enable openstack delete images
+* Enable Openstack image details subcommand
+* Isolate initialization of clients
+* Refactor: continue work on Openstack support
+* Bump urllib3 from 1.26.4 to 1.26.5
+* WIP: continue work on openstack builder
+* Add methods to create sec. group and ssh key on OS
+* Add examples
+* Fix missing imports in cli.py
+* Refactor: move CLI logic to cli.py
+* Update gitignore
+* Update dependency declaration
+* Update dependencies
+* Bump cryptography from 3.2 to 3.3.2
+* Bump cryptography from 2.7 to 3.2
+* Update Pipenv.lock
+* Update copyright in util.py
+* Update requirements
+* Refactor the code base as a start for adding another cloud
+* Add pytest cache to ignored files
+* Add Pipfiles
+
 0.2
 ---
 
+* Update Changelog
 * add demo gif
 * Add demo
 * Add nice color output
@@ -12,19 +91,11 @@ CHANGES
 * Make the example work when debian wants input
 * Update changelog
 * Update the description
-* Initial commit
-* Add Changelog and Authors
-* Add examples
-* Initial commit of Wolkenbrot
 
-0.1.1
------
+0.1
+---
 
 * Initial commit
 * Add Changelog and Authors
-
-0.1.0
------
-
 * Add examples
 * Initial commit of Wolkenbrot
