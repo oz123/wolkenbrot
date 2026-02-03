@@ -12,6 +12,7 @@
 # all copies or substantial portions of the Software.
 # ============================================================================
 
+import io
 import json
 import os
 import shutil
@@ -31,6 +32,14 @@ from paramiko.ssh_exception import (
 
 from .common import Builder
 from .util import check_config, printr, printg, printy, random_name, SSHClient
+
+# Predefined instance types: name -> (vcpus, memory_mb, disk_size)
+INSTANCE_TYPES = {
+    "small": (1, 1024, "10G"),
+    "medium": (2, 4096, "20G"),
+    "large": (4, 8192, "40G"),
+    "xlarge": (8, 16384, "80G"),
+}
 
 
 class LibvirtBuilder(Builder):
@@ -53,9 +62,19 @@ class LibvirtBuilder(Builder):
         self.sec_group_id = True
 
         # Libvirt-specific config
-        self.memory = config_params.get("memory", 2048)  # MB
-        self.vcpus = config_params.get("vcpus", 2)
-        self.disk_size = config_params.get("disk_size", "20G")
+        instance_type = config_params.get("instance_type")
+        if instance_type:
+            if instance_type not in INSTANCE_TYPES:
+                valid = ", ".join(INSTANCE_TYPES.keys())
+                raise ValueError(f"Unknown instance_type '{instance_type}'. Valid types: {valid}")
+            vcpus, memory, disk_size = INSTANCE_TYPES[instance_type]
+            self.vcpus = config_params.get("vcpus", vcpus)
+            self.memory = config_params.get("memory", memory)
+            self.disk_size = config_params.get("disk_size", disk_size)
+        else:
+            self.memory = config_params.get("memory", 2048)  # MB
+            self.vcpus = config_params.get("vcpus", 2)
+            self.disk_size = config_params.get("disk_size", "20G")
         self.network = config_params.get("network", "default")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -112,7 +131,10 @@ class LibvirtBuilder(Builder):
         from io import StringIO
         import paramiko
 
-        self.work_dir = tempfile.mkdtemp(prefix="wolkenbrot-")
+        # Use /var/tmp for better qemu/libvirt access
+        self.work_dir = tempfile.mkdtemp(prefix="wolkenbrot-", dir="/var/tmp")
+        # Make work_dir accessible to qemu
+        os.chmod(self.work_dir, 0o755)
 
         # Generate key in memory
         key = paramiko.RSAKey.generate(bits=4096)
@@ -139,10 +161,9 @@ class LibvirtBuilder(Builder):
 
     def _create_cloud_init_iso(self):
         """Create cloud-init ISO for VM initialization."""
-        print("Creating cloud-init configuration...")
+        import pycdlib
 
-        ci_dir = os.path.join(self.work_dir, "cloud-init")
-        os.makedirs(ci_dir, exist_ok=True)
+        print("Creating cloud-init configuration...")
 
         user = self.config.get("user", "ubuntu")
 
@@ -165,21 +186,34 @@ class LibvirtBuilder(Builder):
             local-hostname: {self.instance_name}
         """)
 
-        user_data_path = os.path.join(ci_dir, "user-data")
-        meta_data_path = os.path.join(ci_dir, "meta-data")
-
-        with open(user_data_path, "w") as f:
-            f.write(user_data)
-        with open(meta_data_path, "w") as f:
-            f.write(meta_data)
-
         self.cloudinit_iso = os.path.join(self.work_dir, "cloud-init.iso")
 
-        subprocess.run(
-            ["cloud-localds", self.cloudinit_iso, user_data_path, meta_data_path],
-            check=True,
-            capture_output=True,
+        iso = pycdlib.PyCdlib()
+        iso.new(vol_ident="cidata", joliet=3, rock_ridge="1.09")
+
+        user_data_bytes = user_data.encode("utf-8")
+        meta_data_bytes = meta_data.encode("utf-8")
+
+        iso.add_fp(
+            io.BytesIO(user_data_bytes),
+            len(user_data_bytes),
+            "/USERDATA.;1",
+            rr_name="user-data",
+            joliet_path="/user-data",
         )
+        iso.add_fp(
+            io.BytesIO(meta_data_bytes),
+            len(meta_data_bytes),
+            "/METADATA.;1",
+            rr_name="meta-data",
+            joliet_path="/meta-data",
+        )
+
+        iso.write(self.cloudinit_iso)
+        iso.close()
+
+        # Make ISO accessible to qemu
+        os.chmod(self.cloudinit_iso, 0o644)
 
         return self.cloudinit_iso
 
@@ -191,6 +225,9 @@ class LibvirtBuilder(Builder):
 
         # Copy base image
         shutil.copy(self.base_image, self.disk_path)
+
+        # Make disk accessible to qemu (read/write)
+        os.chmod(self.disk_path, 0o666)
 
         # Resize if needed
         subprocess.run(
@@ -330,22 +367,42 @@ class LibvirtBuilder(Builder):
 
         raise RuntimeError("Timed out waiting for SSH")
 
+    def _sysprep(self):
+        """Clean up the VM image for templating (like virt-sysprep)."""
+        print("Preparing image for templating...")
+
+        cleanup_commands = [
+            # Remove SSH host keys (new VMs will regenerate)
+            "sudo rm -f /etc/ssh/ssh_host_*",
+            # Remove machine-id (will be regenerated on boot)
+            "sudo truncate -s 0 /etc/machine-id",
+            "sudo rm -f /var/lib/dbus/machine-id",
+            # Clear cloud-init state so it runs again
+            "sudo cloud-init clean --logs 2>/dev/null || true",
+            # Remove temporary files
+            "sudo rm -rf /tmp/* /var/tmp/*",
+            # Clear shell history
+            "sudo rm -f /root/.bash_history",
+            f"rm -f /home/{self.config.get('user', 'ubuntu')}/.bash_history",
+            # Clear logs
+            "sudo find /var/log -type f -exec truncate -s 0 {} \\;",
+            # Remove persistent network rules
+            "sudo rm -f /etc/udev/rules.d/70-persistent-net.rules",
+            # Sync filesystem
+            "sync",
+        ]
+
+        for cmd in cleanup_commands:
+            self.ssh_client.execute(cmd)
+
     def create_image(self):
         """Create the final image."""
         output_path = self.config.get("output_path", f"./{self.name}.qcow2")
 
+        self._sysprep()
+
         print("Shutting down VM for imaging...")
         self._shutdown_machine()
-
-        print("Cleaning up image with virt-sysprep...")
-        subprocess.run(
-            [
-                "virt-sysprep",
-                "-a", self.disk_path,
-                "--operations", "defaults,-ssh-userdir",
-            ],
-            check=True,
-        )
 
         print(f"Copying final image to {output_path}...")
         # Compress/convert the final image
@@ -400,7 +457,7 @@ def info_image(image_path):
     print(result.stdout)
 
 
-def bake(image_config):
+def bake(image_config, uri=None):
     """Bake an image from config."""
     with open(image_config, "r") as fd:
         config_dict = json.load(fd)
@@ -412,7 +469,10 @@ def bake(image_config):
         printr(f"An image at '{output_path}' already exists!")
         sys.exit(2)
 
-    client = get_client()
+    # URI priority: CLI option > config "region" > default
+    libvirt_uri = uri or config_dict.get("region", "qemu:///system")
+
+    client = get_client(libvirt_uri)
     with LibvirtBuilder(client, config_dict) as builder:
         builder.launch()
         builder.wait_for_ssh()
@@ -440,4 +500,4 @@ def action(options):
         delete_image(image_path)
 
     if options.cmd == "bake":
-        bake(options.image)
+        bake(options.image, uri=options.uri)

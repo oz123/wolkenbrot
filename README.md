@@ -132,12 +132,55 @@ Example `libvirt.json`:
 ```
 
 Libvirt-specific configuration options:
+- `region` - Libvirt connection URI (default: `qemu:///system`)
 - `base_image.path` - Path to the base cloud image (qcow2 format)
 - `output_path` - Where to save the final image
-- `memory` - VM memory in MB (default: 2048)
-- `vcpus` - Number of virtual CPUs (default: 2)
-- `disk_size` - Disk size (default: "20G")
+- `instance_type` - Predefined instance type (see table below)
+- `memory` - VM memory in MB (default: 2048, overrides instance_type)
+- `vcpus` - Number of virtual CPUs (default: 2, overrides instance_type)
+- `disk_size` - Disk size (default: "20G", overrides instance_type)
 - `network` - Libvirt network name (default: "default")
+
+#### Instance Types
+
+| Type   | vCPUs | Memory | Disk |
+|--------|-------|--------|------|
+| small  | 1     | 1 GB   | 10G  |
+| medium | 2     | 4 GB   | 20G  |
+| large  | 4     | 8 GB   | 40G  |
+| xlarge | 8     | 16 GB  | 80G  |
+
+You can use `instance_type` instead of specifying `memory`, `vcpus`, and `disk_size` individually:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "base_image": {"path": "/var/lib/libvirt/images/ubuntu.img"},
+  "instance_type": "medium"
+}
+```
+
+Individual settings (`memory`, `vcpus`, `disk_size`) override the instance type defaults if both are specified.
+
+#### Remote Libvirt Hosts
+
+Use `region` in the config (or `--uri` CLI option) to connect to remote libvirt hosts:
+
+```json
+{
+  "provider": "libvirt",
+  "name": "my-image",
+  "region": "qemu+ssh://user@remote-host/system",
+  "base_image": {"path": "/var/lib/libvirt/images/ubuntu.img"},
+  "instance_type": "large"
+}
+```
+
+Common URI formats:
+- `qemu:///system` - Local system (default, requires root or libvirt group)
+- `qemu:///session` - Local user session (unprivileged)
+- `qemu+ssh://user@host/system` - Remote host via SSH
 
 ### FAQ
 
