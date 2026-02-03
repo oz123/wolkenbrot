@@ -64,8 +64,8 @@ build-exec: ## build a single file executable of wolkenbrot
 	pyinstaller wolkenbrot.spec
 
 build-exec-in-docker:  ## build an executable with pyinstaller
-	#docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash -c "make install build-exec PY=$(PY)"
-	docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstaller-builder:latest bash
+	docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash -c "make install build-exec PY=$(PY)"
+	#docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash
 
 build-sdist: clean
 	$(PY) setup.py sdist
