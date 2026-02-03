@@ -145,6 +145,9 @@ class SSHClient:  # pragma: no coverage
         if os.path.isdir(src):
             self._copy_dir(src, dest)
         else:
+            # If dest is a directory (ends with /), append the source filename
+            if dest.endswith("/"):
+                dest = dest + os.path.basename(src)
             self._mkdir_p(os.path.dirname(dest))
             self.sftp.put(src, dest)
 
