@@ -1,5 +1,8 @@
 {
   "name": "k8s-node-base",
+  "provider": "libvirt",
+  "instance_type": "large",
+  "region": "qemu:///system", 
   "description": "Kubernetes node base image",
   "base_image": {
     "path": "/var/lib/libvirt/images/jammy-server-cloudimg-amd64.img"

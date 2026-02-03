@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2383174296a11630493f4c70575e22ef9622081bf1b05ba4b7d26af4d4b4f588"
+            "sha256": "868f539c549e4e62e9f3aff1f2187d7ef881d6f04b9fc9519bc0e01bed476be6"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -428,6 +428,14 @@
             "markers": "python_version >= '3.10'",
             "version": "==5.13.0"
         },
+        "libvirt-python": {
+            "hashes": [
+                "sha256:7b4de7d2dde2bc380cf4e108d1eeb8aad50beb3ae351ab9265a7fedc587742bc"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.6'",
+            "version": "==12.0.0"
+        },
         "openstacksdk": {
             "hashes": [
                 "sha256:b28459c7cb6405f9d6fc573689ea5c5e357424828f6c76f7b2b0d763c80fb6ea",
@@ -496,6 +504,14 @@
             ],
             "markers": "python_version >= '3.6'",
             "version": "==7.2.2"
+        },
+        "pycdlib": {
+            "hashes": [
+                "sha256:8ec306b31d9c850f28c5fda52438d904edd1e8fcf862c5ffd756272efac9f422",
+                "sha256:a905827335f0066af3fd416c5cf9b1f29dffaf4d0914b714555213d1809f38d4"
+            ],
+            "index": "pypi",
+            "version": "==1.14.0"
         },
         "pycparser": {
             "hashes": [
