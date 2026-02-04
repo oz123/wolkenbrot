@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wolkenbrot"
+dynamic = ["version"]
+description = "Create and Manage AWS EC2 AMI cloud images"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Oz N Tiram", email = "oz.tiram@gmail.com"}
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+]
+dependencies = [
+    "boto3",
+    "colorama",
+    "paramiko",
+]
+
+[project.optional-dependencies]
+dev = [
+    "coverage",
+    "pytest",
+    "moto",
+    "pytest-cov",
+]
+openstack = [
+    "openstacksdk",
+]
+libvirt = [
+    "libvirt-python",
+    "pycdlib",
+]
+
+[project.scripts]
+wolkenbrot = "wolkenbrot:main"
+
+[project.urls]
+Homepage = "https://github.com/oz123/wolkenbrot"
+Repository = "https://github.com/oz123/wolkenbrot"
+
+[tool.setuptools]
+packages = ["wolkenbrot"]
+
+[tool.setuptools_scm]
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"
+
+[tool.pytest.ini_options]
+addopts = "-vv"
+python_files = "tests/*.py"

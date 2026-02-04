@@ -69,7 +69,7 @@ build-exec-in-docker:  ## build an executable with pyinstaller
 	#docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash
 
 build-sdist: clean
-	$(PY) setup.py sdist
+	$(PY) -m build -s
 
 pypi-release:
 	twine upload sdist/wolkenbrot.tar.gz
