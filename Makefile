@@ -1,6 +1,7 @@
 .PHONY: clean clean-test clean-pyc clean-build docs help
 .DEFAULT_GOAL := help
 
+PIP ?= pip3
 PY ?= python3
 
 help:
@@ -54,13 +55,13 @@ docs: ## generate Sphinx HTML documentation, including API docs
 
 
 dev: clean
-	pip3 install --only-binary :all: -e .
+	$(PIP) install -e .[openstack,aws,libvirt]
 
 install: clean
-	pip3 install --only-binary :all: .
+	$(PIP) install .[openstack,aws,libvirt]
 
 build-exec: ## build a single file executable of wolkenbrot 
-	pip3 install --only-binary :all: .
+	$(PIP) install .
 	pyinstaller wolkenbrot.spec
 
 build-exec-in-docker:  ## build an executable with pyinstaller
