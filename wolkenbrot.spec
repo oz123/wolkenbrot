@@ -1,3 +1,12 @@
+# build a "static" executable with pyinstaller on rockylinux9
+# run:
+# $ docker run -v $(pwd):/usr/src -it docker.io/oz123/pyinstall-builder:latest bash
+# in-container# dnf config-manager --set-enabled crb
+# in-container# dnf install -y python3.12-devel python3.12-pip libvirt-devel
+# in-container# pip3.12 install -e .[openstack,aws,libvirt]
+# in-container# pip3.12 install pyinstaller
+# in-container# pyinstaller
+
 from pkg_resources import resource_filename, Requirement, get_distribution
 import os
 

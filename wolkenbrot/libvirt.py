@@ -33,6 +33,36 @@ from paramiko.ssh_exception import (
 from .common import Builder
 from .util import check_config, printr, printg, printy, random_name, SSHClient
 
+def _get_subprocess_env():
+    """Get clean environment for subprocess calls (fixes PyInstaller issues).
+
+    PyInstaller modifies LD_LIBRARY_PATH which breaks external binaries.
+    Remove it so system binaries use system libraries.
+    """
+    env = os.environ.copy()
+    # Detect PyInstaller and remove LD_LIBRARY_PATH
+    if hasattr(sys, '_MEIPASS') or env.get("LD_LIBRARY_PATH", "").startswith("/tmp/_MEI"):
+        env.pop("LD_LIBRARY_PATH", None)
+    return env
+
+
+def _find_qemu_img():
+    """Find qemu-img binary, handling PyInstaller's modified PATH."""
+    # Check common locations first (most reliable for PyInstaller)
+    for candidate in ["/usr/bin/qemu-img", "/usr/local/bin/qemu-img"]:
+        if os.path.isfile(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+    # Try shutil.which (works in normal Python)
+    path = shutil.which("qemu-img")
+    if path:
+        return path
+    # Last resort: hope it's in PATH
+    return "qemu-img"
+
+
+QEMU_IMG = _find_qemu_img()
+SUBPROCESS_ENV = _get_subprocess_env()
+
 # Predefined instance types: name -> (vcpus, memory_mb, disk_size)
 INSTANCE_TYPES = {
     "small": (1, 1024, "10G"),
@@ -230,11 +260,19 @@ class LibvirtBuilder(Builder):
         os.chmod(self.disk_path, 0o666)
 
         # Resize if needed
-        subprocess.run(
-            ["qemu-img", "resize", self.disk_path, self.disk_size],
-            check=True,
-            capture_output=True,
-        )
+        try:
+            subprocess.run(
+                [QEMU_IMG, "resize", self.disk_path, self.disk_size],
+                check=True,
+                capture_output=True,
+                env=SUBPROCESS_ENV,
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"qemu-img resize failed with exit code {e.returncode}")
+            print(f"stdout: {e.stdout}")
+            print(f"stderr: {e.stderr}")
+            print(f"env LD_LIBRARY_PATH: {SUBPROCESS_ENV.get('LD_LIBRARY_PATH', 'not set')}")
+            raise
 
         return self.disk_path
 
@@ -408,13 +446,14 @@ class LibvirtBuilder(Builder):
         # Compress/convert the final image
         subprocess.run(
             [
-                "qemu-img", "convert",
+                QEMU_IMG, "convert",
                 "-O", "qcow2",
                 "-c",  # compress
                 self.disk_path,
                 output_path,
             ],
             check=True,
+            env=SUBPROCESS_ENV,
         )
 
         printg(f"Image created: {output_path}")
@@ -450,9 +489,10 @@ def info_image(image_path):
         sys.exit(1)
 
     result = subprocess.run(
-        ["qemu-img", "info", image_path],
+        [QEMU_IMG, "info", image_path],
         capture_output=True,
         text=True,
+        env=SUBPROCESS_ENV,
     )
     print(result.stdout)
 
