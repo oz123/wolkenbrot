@@ -31,6 +31,8 @@ def get_parser():  # pragma: no coverage
                         help="Use OpenStack provider")
     parser.add_argument("--libvirt", action='store_true',
                         help="Use libvirt/KVM provider")
+    parser.add_argument("--hetzner", action='store_true',
+                        help="Use Hetzner Cloud provider")
     parser.add_argument("--uri", type=str, default="qemu:///system",
                         help="Libvirt connection URI (default: qemu:///system)")
     parser.add_argument("--image-dir", type=str, default="/var/lib/libvirt/images",
@@ -81,6 +83,9 @@ def main():
             action(options)
         elif options.openstack or config_dict.get("provider") == 'openstack':
             from wolkenbrot.os import action
+            action(options)
+        elif options.hetzner or config_dict.get("provider") == 'hetzner':
+            from wolkenbrot.hetzner import action
             action(options)
         else:
             from wolkenbrot.aws import action

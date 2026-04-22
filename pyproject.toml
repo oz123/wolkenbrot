@@ -45,6 +45,9 @@ libvirt = [
     "libvirt-python",
     "pycdlib",
 ]
+hetzner = [
+    "hcloud",
+]
 
 [project.scripts]
 wolkenbrot = "wolkenbrot:main"
