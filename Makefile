@@ -65,7 +65,7 @@ build-exec: ## build a single file executable of wolkenbrot
 	pyinstaller wolkenbrot.spec
 
 build-exec-in-docker:  ## build an executable with pyinstaller
-	docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash -c "make install build-exec PY=$(PY)"
+	docker run --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash -c "dnf config-manager --set-enabled crb && dnf install -y libvirt-devel pkgconf && make install build-exec PY=$(PY)"
 	#docker run -it --rm -w /usr/src -v $(CURDIR):/usr/src/ docker.io/oz123/pyinstall-builder:latest bash
 
 build-sdist: clean

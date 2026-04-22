@@ -65,7 +65,8 @@ class HetznerBuilder(Builder):
         printy("Cleaning after myself...")
         if self.instance:
             printy(f"Deleting server {self.instance.name}...")
-            self.instance.delete()
+            action = self.instance.delete()
+            action.wait_until_finished()
         if self.sec_grp:
             printy(f"Deleting firewall {self.sec_grp.name}...")
             self.sec_grp.delete()
@@ -161,7 +162,7 @@ class HetznerBuilder(Builder):
         action.wait_until_finished()
         self.wait_for_status("off")
 
-        labels = {"description": self.desc}
+        labels = {}
         if self.tags:
             for tag in self.tags:
                 labels.update(tag)

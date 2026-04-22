@@ -51,7 +51,15 @@ os_defaults = resource_filename(Requirement('openstacksdk'), 'openstack')
 os_service_types_ = get_distribution('os_service_types')
 keystoneauth1 = get_distribution('keystoneauth1')
 sdk_dist = get_distribution('openstacksdk')
-munch = get_distribution('munch')
+
+extra_datas = []
+extra_hidden_imports = []
+try:
+    munch = get_distribution('munch')
+    extra_datas.append((munch.egg_info, 'munch-%s.dist-info' % munch.parsed_version.base_version))
+    extra_hidden_imports.append('munch')
+except Exception:
+    pass
 
 
 a = Entrypoint('wolkenbrot', 'console_scripts', 'wolkenbrot',
@@ -62,8 +70,7 @@ a = Entrypoint('wolkenbrot', 'console_scripts', 'wolkenbrot',
                       (os_service_types_.egg_info,
                        'os_service_types-%s.dist-info' % os_service_types_.parsed_version.base_version),
                       (sdk_dist.egg_info, 'openstacksdk-%s.dist-info' % sdk_dist.parsed_version.base_version),
-                      (munch.egg_info, 'munch-%s.dist-info' % munch.parsed_version.base_version),
-                      ],
+                      ] + extra_datas,
                hiddenimports=['novaclient.v2', 'cinderclient.v3',
                               'keystoneauth1', 'keystoneclient',
                               'keystoneauth1.loading._plugins',
@@ -71,11 +78,11 @@ a = Entrypoint('wolkenbrot', 'console_scripts', 'wolkenbrot',
                               'keystoneauth1.loading._plugins.identity.generic',
                               'keystoneauth1.identity',
                               'os_service_types',
-			      'osc_lib',
+                              'osc_lib',
                               'openstacksdk',
                               'openstack',
                               'octaviaclient.api',
-                              'munch'])
+                              ] + extra_hidden_imports)
 
 
 pyz = PYZ(a.pure, a.zipped_data,

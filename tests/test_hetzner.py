@@ -13,7 +13,7 @@ valid = {
     "provider": "hetzner",
     "user": "root",
     "region": "nbg1",
-    "instance_type": "cx22",
+    "instance_type": "cx23",
     "base_image": {
         "name": "ubuntu-24.04"
     },
@@ -109,7 +109,7 @@ def test_launch(mock_client):
         mock_client.servers.create.assert_called_once()
         _, kwargs = mock_client.servers.create.call_args
         assert kwargs["image"].name == "ubuntu-24.04"
-        assert kwargs["server_type"].name == "cx22"
+        assert kwargs["server_type"].name == "cx23"
         assert kwargs["location"].name == "nbg1"
         mock_client.firewalls.apply_to_resources.assert_called_once()
         assert builder.instance is not None
@@ -191,7 +191,7 @@ def test_create_image(mock_sleep, mock_client):
         builder.instance.create_image.assert_called_once_with(
             description="my-custom-image",
             type="snapshot",
-            labels={"description": "My custom Hetzner Cloud image"},
+            labels={},
         )
 
 

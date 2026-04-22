@@ -3,7 +3,7 @@
     "name": "my-custom-image",
     "description": "My custom Hetzner Cloud image",
     "user": "root",
-    "instance_type": "cx22",
+    "instance_type": "cx23",
     "region": "nbg1",
     "base_image": {
         "name": "ubuntu-24.04"
